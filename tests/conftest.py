@@ -23,6 +23,8 @@ TABLES = {
     "entries_manual": "entries",
     "votes": "votes",
     "dyad_static": "dyad_static",
+    "migration": "migration",
+    "pageviews": "pageviews",
 }
 
 

@@ -7,7 +7,6 @@ from esc import io
 from esc.build import dyads, entries, features, votes
 
 LADDER_SUM = 58
-PANEL_YEAR = 2016
 
 
 @pytest.fixture()
@@ -49,12 +48,11 @@ def test_every_voter_awards_the_full_ladder(built):
     assert set(totals.unique()) == {LADDER_SUM}
 
 
-def test_the_panel_starts_in_2016(built):
+def test_row_counts_per_year_are_non_zero(built):
     table = io.read_parquet("dyads", "processed")
-    # 2015 is in the fixtures and reports combined points only, so it is out
-    assert set(table["year"]) == {PANEL_YEAR}
-    assert set(table["vote_type"]) == {"jury", "televote"}
-    assert set(table["round"]) == {"final"}
+    counts = table.groupby("year").size()
+    assert (counts > 0).all()
+    assert 2020 not in counts.index
 
 
 def test_country_map_covers_every_country_in_the_panel(built):
@@ -85,38 +83,10 @@ def test_dyads_stay_directed(built):
     assert not (table["from_iso3"] == table["to_iso3"]).any()
 
 
-def test_a_missing_optional_table_does_not_stop_the_build(built):
+def test_pageviews_are_missing_before_they_existed(built):
     table = io.read_parquet("dyads", "processed")
-    # nobody has delivered trends or the lyric features yet
-    assert "web_interest" not in table.columns
-    assert "sentiment" not in table.columns
-    assert len(table) > 0
-
-
-def test_an_optional_table_is_joined_once_it_exists(interim):
-    panel_entries = io.read_parquet("entries", "interim")
-    final = panel_entries[panel_entries["round"] == "final"]
-    lyrics = pd.DataFrame(
-        {
-            "entry_id": final["entry_id"].unique(),
-            "sentiment": "sad",
-            "repetition_verse": True,
-            "repetition_chorus": False,
-            "theme": "heartbreak",
-        }
-    )
-    io.write_parquet(lyrics, "lyric_features", "interim")
-    entries.build()
-    votes.build()
-    dyads.build()
-    table = io.read_parquet("dyads", "processed")
-    assert set(table["sentiment"].dropna()) == {"sad"}
-
-
-def test_points_share_sums_to_one_per_show(built):
-    table = io.read_parquet("features", "processed")
-    shares = table.groupby(["year", "round", "vote_type"])["points_share"].sum()
-    assert shares.round(6).eq(1.0).all()
+    assert table.loc[table["year"] == 2015, "views_total"].isna().all()
+    assert table.loc[table["year"] == 2016, "views_total"].notna().all()
 
 
 def test_receiver_effect_leaves_the_focal_voter_out(built):

@@ -1,25 +1,25 @@
-entry_id,year,country_iso3,artist,song,running_order,round,place,points_total,qualified,artist_age,artist_sex,song_language
-2015-AUT,2015,AUT,artist AUT,song AUT 2015,1,final,1,99,true,31,female,english
-2015-SWE,2015,SWE,artist SWE,song SWE 2015,2,final,2,98,true,32,male,english
-2015-GRC,2015,GRC,artist GRC,song GRC 2015,3,final,3,97,true,33,female,english
-2015-GBR,2015,GBR,artist GBR,song GBR 2015,4,final,4,96,true,34,male,english
-2015-SRB,2015,SRB,artist SRB,song SRB 2015,5,final,5,95,true,35,female,english
-2015-MNE,2015,MNE,artist MNE,song MNE 2015,6,final,6,94,true,36,male,english
-2015-MKD,2015,MKD,artist MKD,song MKD 2015,7,final,7,93,true,37,female,english
-2015-NOR,2015,NOR,artist NOR,song NOR 2015,8,final,8,92,true,38,male,english
-2015-FIN,2015,FIN,artist FIN,song FIN 2015,9,final,9,91,true,39,female,english
-2015-IRL,2015,IRL,artist IRL,song IRL 2015,10,final,10,90,true,40,male,english
-2015-PRT,2015,PRT,artist PRT,song PRT 2015,11,final,11,89,true,41,female,english
-2015-ITA,2015,ITA,artist ITA,song ITA 2015,12,final,12,88,true,42,male,english
-2016-AUT,2016,AUT,artist AUT,song AUT 2016,1,final,1,99,true,31,female,english
-2016-SWE,2016,SWE,artist SWE,song SWE 2016,2,final,2,98,true,32,male,english
-2016-GRC,2016,GRC,artist GRC,song GRC 2016,3,final,3,97,true,33,female,english
-2016-GBR,2016,GBR,artist GBR,song GBR 2016,4,final,4,96,true,34,male,english
-2016-SRB,2016,SRB,artist SRB,song SRB 2016,5,final,5,95,true,35,female,english
-2016-MNE,2016,MNE,artist MNE,song MNE 2016,6,final,6,94,true,36,male,english
-2016-MKD,2016,MKD,artist MKD,song MKD 2016,7,final,7,93,true,37,female,english
-2016-NOR,2016,NOR,artist NOR,song NOR 2016,8,final,8,92,true,38,male,english
-2016-FIN,2016,FIN,artist FIN,song FIN 2016,9,final,9,91,true,39,female,english
-2016-IRL,2016,IRL,artist IRL,song IRL 2016,10,final,10,90,true,40,male,english
-2016-PRT,2016,PRT,artist PRT,song PRT 2016,11,final,11,89,true,41,female,english
-2016-ITA,2016,ITA,artist ITA,song ITA 2016,12,final,12,88,true,42,male,english
+entry_id,year,country_iso3,artist,song,running_order,round,place,points_total,qualified,selection_type
+2015-AUT,2015,AUT,artist AUT,song AUT 2015,1,final,1,99,true,national final
+2015-SWE,2015,SWE,artist SWE,song SWE 2015,2,final,2,98,true,national final
+2015-GRC,2015,GRC,artist GRC,song GRC 2015,3,final,3,97,true,national final
+2015-GBR,2015,GBR,artist GBR,song GBR 2015,4,final,4,96,true,national final
+2015-SRB,2015,SRB,artist SRB,song SRB 2015,5,final,5,95,true,national final
+2015-MNE,2015,MNE,artist MNE,song MNE 2015,6,final,6,94,true,national final
+2015-MKD,2015,MKD,artist MKD,song MKD 2015,7,final,7,93,true,national final
+2015-NOR,2015,NOR,artist NOR,song NOR 2015,8,final,8,92,true,national final
+2015-FIN,2015,FIN,artist FIN,song FIN 2015,9,final,9,91,true,national final
+2015-IRL,2015,IRL,artist IRL,song IRL 2015,10,final,10,90,true,national final
+2015-PRT,2015,PRT,artist PRT,song PRT 2015,11,final,11,89,true,national final
+2015-ITA,2015,ITA,artist ITA,song ITA 2015,12,final,12,88,true,national final
+2016-AUT,2016,AUT,artist AUT,song AUT 2016,1,final,1,99,true,national final
+2016-SWE,2016,SWE,artist SWE,song SWE 2016,2,final,2,98,true,national final
+2016-GRC,2016,GRC,artist GRC,song GRC 2016,3,final,3,97,true,national final
+2016-GBR,2016,GBR,artist GBR,song GBR 2016,4,final,4,96,true,national final
+2016-SRB,2016,SRB,artist SRB,song SRB 2016,5,final,5,95,true,national final
+2016-MNE,2016,MNE,artist MNE,song MNE 2016,6,final,6,94,true,national final
+2016-MKD,2016,MKD,artist MKD,song MKD 2016,7,final,7,93,true,national final
+2016-NOR,2016,NOR,artist NOR,song NOR 2016,8,final,8,92,true,national final
+2016-FIN,2016,FIN,artist FIN,song FIN 2016,9,final,9,91,true,national final
+2016-IRL,2016,IRL,artist IRL,song IRL 2016,10,final,10,90,true,national final
+2016-PRT,2016,PRT,artist PRT,song PRT 2016,11,final,11,89,true,national final
+2016-ITA,2016,ITA,artist ITA,song ITA 2016,12,final,12,88,true,national final
