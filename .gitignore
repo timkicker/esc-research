@@ -1,0 +1,30 @@
+# derived or downloaded, never committed
+data/raw/
+data/interim/
+data/processed/
+
+# hand curated tables are the exception
+!data/manual/
+
+cache/
+.env
+
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# only ever a build artefact
+*.parquet
+
+# audio never gets committed
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.opus
+*.m4a
+*.aac
+*.wma

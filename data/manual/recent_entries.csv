@@ -1,0 +1,7 @@
+# hand maintained, upstream stops at 2023 so later years go here
+# country_iso3 must exist in country_map.csv, never a country name
+# round is semi1, semi2 or final
+# the XXX row below is a placeholder, the parser drops it, delete it once real
+# data is in
+year,country_iso3,artist,song,running_order,round,place,points_total
+2024,XXX,Example Artist,Example Song,1,final,1,0

@@ -1,0 +1,16 @@
+# hand maintained, no pipeline stage writes this
+# the only bridge between source spellings and the iso3 join key
+# eurostat_geo is not iso2, EL for greece and UK for the uk
+# valid_to empty means still current
+# qids checked against wdt:P298 on 2026-09-10
+esc_name,iso3,eurostat_geo,wikidata_qid,valid_from,valid_to,notes
+Austria,AUT,AT,Q40,1957,,reference row
+Sweden,SWE,SE,Q34,1958,,reference row
+Greece,GRC,EL,Q41,1974,,eurostat geo is EL not GR
+United Kingdom,GBR,UK,Q145,1957,,"eurostat geo is UK not GB, add a row per spelling the sources use"
+Yugoslavia,YUG,,Q83286,1961,1992,"sfr yugoslavia, iso 3166-3, no eurostat series, TODO verify cepii coverage"
+Serbia and Montenegro,SCG,,Q37024,2004,2005,"esc spells it 'Serbia & Montenegro', add that as its own row, withdrew after 2005"
+Serbia,SRB,RS,Q403,2007,,"separate entrant from 2007, do not carry SCG results forward onto SRB"
+Montenegro,MNE,ME,Q236,2007,,"separate entrant from 2007"
+F.Y.R. Macedonia,MKD,MK,Q221,1998,2018,"same state as the row below, renamed 2019, TODO add a row per spelling seen in the data"
+North Macedonia,MKD,MK,Q221,2019,2022,"renamed state, same qid and iso3 as the row above, last took part 2022"

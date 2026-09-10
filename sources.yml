@@ -1,0 +1,173 @@
+# every external source, nothing lands in data/raw without a row here
+#
+# url          string for api and manual sources, filename -> url mapping for
+#              downloads so the keys line up with sha256
+# retrieved_at written by fetch.record_provenance
+# sha256       filename -> digest, written by the same helper, null means not
+#              fetched yet and not "no checksum needed"
+#
+# download urls are pinned to a release tag or a commit sha, a url pointing at
+# a moving branch is not provenance
+
+sources:
+  - id: eurovision_dataset
+    name: Eurovision Song Contest Dataset (Spijkervet)
+    url:
+      contestants.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/contestants.csv
+      votes.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/votes.csv
+      betting_offices.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/betting_offices.csv
+    kind: download
+    license: unspecified
+    citation: >-
+      Spijkervet, J. (2020). The Eurovision Song Contest Dataset (Version 1.0)
+      [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4036457
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      release tag 2023, covers 1956-2023. the repo has no LICENSE file so reuse
+      rests on the authors asking to be cited rather than on a grant of rights,
+      fine for research in place, ask them before redistributing anything
+
+  - id: mirovision
+    name: MIRoVision extended tables
+    url:
+      contestants.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/contestants.csv
+      votes.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/votes.csv
+      jurors.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/jurors.csv
+      bookmakers.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/bookmakers.csv
+      countries.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/countries.csv
+    kind: download
+    license: MIT
+    citation: >-
+      Burgoyne, J. A., Spijkervet, J., & Baker, D. J. (2023). Measuring the
+      Eurovision Song Contest: A Living Dataset for Real-World MIR. In
+      Proceedings of the 24th International Society for Music Information
+      Retrieval Conference (ISMIR 2023), Milan.
+      https://archives.ismir.net/ismir2023/paper/000097.pdf
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      superset of eurovision_dataset. jurors.csv has the individual juror
+      rankings from 2016 on, bookmakers.csv has day of contest odds for
+      2016-2017 and daily odds up to six months out from 2018. no releases so
+      the commit sha is the only stable handle, d70e25d was head of main.
+      tune_plus.csv is skipped on purpose, entry level audio is not what we
+      measure
+
+  - id: cepii_geodist
+    name: CEPII GeoDist, dyadic file
+    url:
+      dist_cepii.zip: https://www.cepii.fr/distance/dist_cepii.zip
+    kind: download
+    license: Etalab Open Licence 2.0
+    citation: >-
+      Mayer, T., & Zignago, S. (2011). Notes on CEPII's distances measures: The
+      GeoDist database. CEPII Working Paper 2011-25.
+      https://www.cepii.fr/pdf_pub/wp/2011/wp2011-25.pdf
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      zip holds dist_cepii as stata and excel. no year dimension so it is static
+      across the panel and states created after the last revision are missing.
+      with dyad fixed effects every column here drops out by construction
+
+  - id: eurostat_migration
+    name: Eurostat migr_pop1ctz, population by citizenship
+    url: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/migr_pop1ctz?format=JSON&lang=EN
+    kind: api
+    license: >-
+      European Commission reuse policy, Decision 2011/833/EU, free reuse with
+      acknowledgement
+    citation: >-
+      Eurostat. Population on 1 January by age group, sex and citizenship
+      (migr_pop1ctz). https://ec.europa.eu/eurostat/databrowser/view/migr_pop1ctz
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      json-stat 2.0, no key needed. dimension codes still unconfirmed which is
+      why the fetch module is a stub. eu and efta only, reporting rows for
+      australia israel azerbaijan armenia georgia do not exist, drop them with a
+      count and never fill with zeros. geo codes are not iso3, EL and UK go
+      through country_map.csv
+
+  - id: wikidata
+    name: Wikidata Query Service
+    url: https://query.wikidata.org/sparql
+    kind: api
+    license: CC0 1.0
+    citation: Wikidata contributors. Wikidata. Wikimedia Foundation.
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      only used to resolve entries to wikipedia article titles per language,
+      which is what pageviews needs. 60s query timeout so slice by year
+
+  - id: wikimedia_pageviews
+    name: Wikimedia REST pageviews, per article daily
+    url: https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{project}/{access}/{agent}/{article}/daily/{start}/{end}
+    kind: api
+    license: CC0 1.0
+    citation: Wikimedia Foundation. Wikimedia REST API. https://wikimedia.org/api/rest_v1/
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      starts 2015-07-01, anything built on it shortens the panel so every model
+      gets reported twice, long panel without and short panel with. depends on
+      wikidata for the titles
+
+  - id: unga_ideal_points
+    name: UN General Assembly ideal points
+    url: https://dataverse.harvard.edu/api/access/datafile/13642051
+    kind: download
+    license: CC0 1.0
+    citation: >-
+      Bailey, M. A., Strezhnev, A., & Voeten, E. (2017). Estimating Dynamic
+      State Preferences from United Nations Voting Data. Journal of Conflict
+      Resolution, 61(2), 430-456. Data: United Nations General Assembly Voting
+      Data, Harvard Dataverse. https://doi.org/10.7910/DVN/LEJUQZ
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      dataset version 39.0, ids checked 2026-09-10. IdealPointDyads1946-2025.tab
+      is 13642051 and is what the url points at, IdealpointsJuly2025.tab is
+      11824371, AgreementScores.csv is 11837234. which one we want is still open.
+      dataverse ids move with every version so recheck instead of trusting
+
+  - id: manual_country_map
+    name: ESC country name to ISO3, Eurostat geo and Wikidata QID
+    url: data/manual/country_map.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project
+    retrieved_at: null
+    sha256: null
+    notes: the only bridge between source spellings and the iso3 join key
+
+  - id: manual_voting_regimes
+    name: voting regime per contest year
+    url: data/manual/voting_regimes.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project
+    retrieved_at: null
+    sha256: null
+    notes: which vote types exist in a given year, per the table in README.md
+
+  - id: manual_recent_entries
+    name: entries after the upstream datasets end
+    url: data/manual/recent_entries.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project
+    retrieved_at: null
+    sha256: null
+    notes: upstream stops at 2023, anything later is typed in by hand
+
+# considered and rejected, listed so nobody adds them later thinking nobody looked
+excluded:
+  - id: spotify
+    name: Spotify Web API
+    reason: terms of use prohibit machine learning applications
+  - id: tmdb
+    name: TMDB API
+    reason: terms of use prohibit machine learning applications
