@@ -8,6 +8,7 @@ data/processed/
 
 cache/
 .env
+notes/
 
 __pycache__/
 *.py[cod]
