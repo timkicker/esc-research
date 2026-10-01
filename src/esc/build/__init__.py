@@ -51,6 +51,32 @@ def left_join(
     return merged
 
 
+def optional_join(
+    left: pd.DataFrame,
+    name: str,
+    layer: str,
+    on: list[str],
+    step: str,
+    rename: dict[str, str] | None = None,
+) -> pd.DataFrame:
+    """join a table that a teammate still owes us, or say it is missing
+
+    anna-ilona and zhenya deliver trends and the lyric features separately. the
+    panel must build without them, otherwise the whole pipeline waits on two
+    people and we have thirteen days
+    """
+    from esc import io
+
+    path = io.parquet_path(name, layer)
+    if not path.exists():
+        log(step, f"join {name}: file not there yet, columns stay missing")
+        return left
+    right = io.read_parquet(name, layer)
+    if rename:
+        right = right.rename(columns=rename)
+    return left_join(left, right, on, name, step)
+
+
 def require_non_empty(df: pd.DataFrame, table: str) -> pd.DataFrame:
     if df.empty:
         raise ValueError(

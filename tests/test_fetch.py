@@ -93,18 +93,15 @@ def test_get_source_lists_the_known_ids(tmp_path, monkeypatch):
 def test_every_source_in_the_real_manifest_has_a_module():
     import importlib
 
-    manual = {"manual_country_map", "manual_voting_regimes", "manual_recent_entries"}
     modules = {
         "eurovision_dataset": "eurovision_dataset",
-        "mirovision": "mirovision",
+        "eurovisionworld": "eurovisionworld",
         "cepii_geodist": "cepii_geodist",
-        "eurostat_migration": "eurostat",
         "wikidata": "wikidata",
-        "wikimedia_pageviews": "pageviews",
-        "unga_ideal_points": "unga",
+        "google_trends": "google_trends",
     }
     for source in fetch.load_sources()["sources"]:
-        if source["id"] in manual:
+        if source["kind"] == "manual":
             continue
         module = importlib.import_module(f"esc.fetch.{modules[source['id']]}")
         assert module.SOURCE_ID == source["id"]

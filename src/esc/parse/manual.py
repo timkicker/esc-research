@@ -1,8 +1,9 @@
-"""hand curated csvs in data/manual/ -> interim tables
+"""hand curated csvs in data/manual/ -> typed interim tables
 
-the only inputs we own so this one can actually be written, the headers are ours
+the only inputs we own, so unlike the other parse modules this one can be
+written without looking at a download first
 
-pandas applies comment="#" anywhere on a line not just at the start, so no #
+pandas applies comment="#" anywhere on a line, not only at the start, so no #
 inside a field
 """
 
@@ -39,10 +40,11 @@ def _to_boolean(series: pd.Series) -> pd.Series:
 
 def parse_country_map() -> Path:
     df = _read("country_map").drop(columns=["notes"])
-    df["valid_from"] = pd.to_numeric(df["valid_from"]).astype("int16")
-    df["valid_to"] = pd.to_numeric(df["valid_to"]).astype("Int16")
+    for column in ("valid_from", "valid_to"):
+        df[column] = pd.to_numeric(df[column]).astype("Int16")
     out = enforce(df, "country_map")
-    print(f"[parse.manual] country_map: {len(df)} in -> {len(out)} out")
+    kinds = out["kind"].value_counts().to_dict()
+    print(f"[parse.manual] country_map: {len(out)} labels, {kinds}")
     return io.write_parquet(out, "country_map", "interim")
 
 
@@ -56,15 +58,36 @@ def parse_voting_regimes() -> Path:
     out = enforce(df, "voting_regimes")
     unverified = int(out["separately_reported"].isna().sum())
     print(
-        f"[parse.manual] voting_regimes: {len(df)} in -> {len(out)} out, "
+        f"[parse.manual] voting_regimes: {len(out)} rows, "
         f"{unverified} year(s) unverified or cancelled"
     )
     return io.write_parquet(out, "voting_regimes", "interim")
 
 
+def parse_contest_dates() -> Path:
+    df = _read("contest_dates")
+    df["year"] = pd.to_numeric(df["year"]).astype("int16")
+    df["final_date"] = pd.to_datetime(df["final_date"])
+    out = enforce(df, "contest_dates")
+    print(f"[parse.manual] contest_dates: {len(out)} years")
+    return io.write_parquet(out, "contest_dates", "interim")
+
+
+def parse_song_language() -> Path:
+    df = _read("song_language")
+    placeholders = int(df["entry_id"].str.endswith(PLACEHOLDER_ISO3).sum())
+    df = df[~df["entry_id"].str.endswith(PLACEHOLDER_ISO3)].copy()
+    out = enforce(df, "song_language")
+    print(
+        f"[parse.manual] song_language: {len(out)} entries, "
+        f"{placeholders} placeholder row(s) dropped"
+    )
+    return io.write_parquet(out, "song_language", "interim")
+
+
 def parse_recent_entries() -> Path:
+    """entries for the years after the upstream release, typed in by hand"""
     df = _read("recent_entries")
-    # drop the shipped example row so it cannot leak into the panel
     placeholders = int((df["country_iso3"] == PLACEHOLDER_ISO3).sum())
     df = df[df["country_iso3"] != PLACEHOLDER_ISO3].copy()
 
@@ -73,9 +96,14 @@ def parse_recent_entries() -> Path:
     df["place"] = pd.to_numeric(df["place"]).astype("Int16")
     df["points_total"] = pd.to_numeric(df["points_total"]).astype("Int32")
     df["entry_id"] = entry_id(df["year"], df["country_iso3"]).values
-    # not recorded by hand yet, missing not false
-    df["qualified"] = pd.Series(pd.NA, index=df.index, dtype="boolean")
-    df["selection_type"] = pd.Series(pd.NA, index=df.index, dtype="string")
+    # filled later by build/entries.py from the artists and song_language tables
+    for column, dtype in (
+        ("qualified", "boolean"),
+        ("artist_age", "Int16"),
+        ("artist_sex", "string"),
+        ("song_language", "string"),
+    ):
+        df[column] = pd.Series(pd.NA, index=df.index, dtype=dtype)
 
     out = enforce(df, "entries")
     total = len(df) + placeholders
@@ -87,4 +115,10 @@ def parse_recent_entries() -> Path:
 
 
 def parse() -> list[Path]:
-    return [parse_country_map(), parse_voting_regimes(), parse_recent_entries()]
+    return [
+        parse_country_map(),
+        parse_voting_regimes(),
+        parse_contest_dates(),
+        parse_song_language(),
+        parse_recent_entries(),
+    ]

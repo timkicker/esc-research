@@ -1,0 +1,5 @@
+# hand maintained, main language per entry, in no dataset
+# entry_id is year-iso3
+# the single row below is a placeholder with a dummy code, the parser drops it
+entry_id,language
+2016-XXX,placeholder

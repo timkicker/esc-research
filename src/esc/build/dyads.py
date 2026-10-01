@@ -5,6 +5,11 @@ from_iso3 awards, to_iso3 receives, the pair is never collapsed
 pairs that awarded nothing stay in with points = 0, only the top ten get points
 so dropping the zeros would leave a panel of successes and turn every
 coefficient into a selection artefact
+
+the panel is finals only and from 2016. the semi-finals have a different set of
+voters and from 2023 no jury at all, and before 2016 the jury and televote split
+is not reported. the semi-final result still enters, but as a column on the
+entry, not as its own panel row
 """
 
 from __future__ import annotations
@@ -14,12 +19,12 @@ from pathlib import Path
 import pandas as pd
 
 from esc import io
-from esc.build import left_join, log, log_counts, require_non_empty
-from esc.parse import entry_id
+from esc.build import left_join, log, log_counts, optional_join, require_non_empty
 
 STEP = "dyads"
 
 KEYS = ["year", "round", "vote_type", "from_iso3", "to_iso3"]
+FIRST_YEAR = 2016
 
 
 def _grid(votes: pd.DataFrame, entries: pd.DataFrame) -> pd.DataFrame:
@@ -57,9 +62,11 @@ def build() -> Path:
     votes = io.read_parquet("votes", "processed")
     entries = io.read_parquet("entries", "processed")
     dyad_static = io.read_parquet("dyad_static", "interim")
-    migration = io.read_parquet("migration", "interim")
-    pageviews = io.read_parquet("pageviews", "interim")
     regimes = io.read_parquet("voting_regimes", "interim")
+
+    votes = votes[(votes["round"] == "final") & (votes["year"] >= FIRST_YEAR)]
+    entries = entries[(entries["round"] == "final") & (entries["year"] >= FIRST_YEAR)]
+    log(STEP, f"finals from {FIRST_YEAR}: {len(votes)} votes, {len(entries)} entries")
 
     panel = _attach_points(_grid(votes, entries), votes)
     n_in = len(panel)
@@ -71,36 +78,16 @@ def build() -> Path:
         "dyad_static",
         STEP,
     )
+    panel["entry_id"] = (
+        panel["year"].astype("string") + "-" + panel["to_iso3"].astype("string")
+    ).astype("string")
 
-    # geo is the reporting country and citizen the citizenship, so this is the
-    # stock of to_iso3 citizens living in from_iso3, the diaspora that votes
-    panel = left_join(
-        panel,
-        migration.rename(
-            columns={
-                "geo_iso3": "from_iso3",
-                "citizen_iso3": "to_iso3",
-                "population": "migrant_stock",
-            }
-        ),
-        ["year", "from_iso3", "to_iso3"],
-        "migration",
-        STEP,
+    panel = optional_join(
+        panel, "trends", "interim", ["year", "from_iso3", "entry_id"], STEP
     )
-
-    # which dates this sum covers is decided by what fetch/pageviews.py asks for
-    attention = (
-        pageviews.groupby("entry_id", as_index=False)["views"]
-        .sum()
-        .rename(columns={"views": "views_total"})
-    )
-    panel["entry_id"] = entry_id(panel["year"], panel["to_iso3"]).values
-    panel = left_join(panel, attention, ["entry_id"], "pageviews", STEP)
-
+    panel = optional_join(panel, "lyric_features", "interim", ["entry_id"], STEP)
     panel = left_join(panel, regimes, ["year"], "voting_regimes", STEP)
 
-    no_views = int(panel["views_total"].isna().sum())
     log_counts(STEP, "dyads", n_in, len(panel))
     log(STEP, f"years {panel['year'].min()}-{panel['year'].max()}")
-    log(STEP, f"rows without pageviews: {no_views}")
     return io.write_parquet(require_non_empty(panel, "dyads"), "dyads", "processed")

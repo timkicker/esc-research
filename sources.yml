@@ -15,44 +15,44 @@ sources:
     url:
       contestants.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/contestants.csv
       votes.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/votes.csv
-      betting_offices.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/betting_offices.csv
     kind: download
     license: unspecified
     citation: >-
       Spijkervet, J. (2020). The Eurovision Song Contest Dataset (Version 1.0)
       [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4036457
-    retrieved_at: null
-    sha256: null
+    retrieved_at: '2026-10-01T09:46:13Z'
+    sha256:
+      contestants.csv: 3b8cc72b81a63ea63788b711248b5f23544b6e3778d8a3a4e976309c69adedf7
+      votes.csv: f699205c62756c51e14bc94166705fa2ea3c78cc27c940503e87e21ed532d8a8
     notes: >-
-      release tag 2023, covers 1956-2023. the repo has no LICENSE file so reuse
-      rests on the authors asking to be cited rather than on a grant of rights,
-      fine for research in place, ask them before redistributing anything
+      release tag 2023. contestants.csv has 1734 rows 1956-2023 with place_final,
+      running_final, the jury and televote split per entry and the lyrics.
+      votes.csv has 51354 rows 1957-2023, jury and televote filled from 2016.
+      the two files disagree about country names: contestants spells them out,
+      votes uses lowercase iso2. the repo has no LICENSE file, the authors ask
+      to be cited. upstream is dead since november 2023, hence eurovisionworld
 
-  - id: mirovision
-    name: MIRoVision extended tables
-    url:
-      contestants.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/contestants.csv
-      votes.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/votes.csv
-      jurors.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/jurors.csv
-      bookmakers.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/bookmakers.csv
-      countries.csv: https://raw.githubusercontent.com/Amsterdam-Music-Lab/mirovision/d70e25d4871b84d1502dfe65c9713e217bfdd716/data/CSV/countries.csv
-    kind: download
-    license: MIT
-    citation: >-
-      Burgoyne, J. A., Spijkervet, J., & Baker, D. J. (2023). Measuring the
-      Eurovision Song Contest: A Living Dataset for Real-World MIR. In
-      Proceedings of the 24th International Society for Music Information
-      Retrieval Conference (ISMIR 2023), Milan.
-      https://archives.ismir.net/ismir2023/paper/000097.pdf
-    retrieved_at: null
-    sha256: null
+  - id: eurovisionworld
+    name: eurovisionworld.com results, 2024 onwards
+    url: https://eurovisionworld.com/eurovision/{year}
+    kind: api
+    license: >-
+      no stated reuse licence. robots.txt disallows only /bonus/ and /cdn-cgi/,
+      the results pages are allowed
+    citation: eurovisionworld.com, results pages per contest year
+    retrieved_at: '2026-10-01T10:08:06Z'
+    sha256:
+      2024-jury.html: fcda095efa475b0e8ec5fafd28624d329ca72475a40ce767eac4f31045f29c53
+      2024-tele.html: 95917767987fffb3cca3e27edd78f7b3c47833307678f2dc5258f29502692670
+      2025-jury.html: 8a18491c765493e774ae13f862a404fd0a17f535b6d07bfc24f49603c6c96a39
+      2025-tele.html: 874d9760f6a97e89da468ced3950cc5b5b55d78195e135409ad1aa41fbb33505
+      2026-jury.html: 3c830cb684a7ba57fb336e62066e761b1f0b1635b4db4483c8bde37bcd9a4ad5
+      2026-tele.html: de50b6078beb8c9b15cd7cf17c176520408217604a270d8c7ec91830f5d84432
     notes: >-
-      superset of eurovision_dataset. jurors.csv has the individual juror
-      rankings from 2016 on, bookmakers.csv has day of contest odds for
-      2016-2017 and daily odds up to six months out from 2018. no releases so
-      the commit sha is the only stable handle, d70e25d was head of main.
-      tune_plus.csv is skipped on purpose, entry level audio is not what we
-      measure
+      fills the gap the spijkervet release leaves after 2023. the scoreboard is
+      built by javascript and the jury/televote switch hangs on a data-button,
+      so this needs a real browser and not requests. throttle, keep the rendered
+      html on disk, never fetch twice
 
   - id: cepii_geodist
     name: CEPII GeoDist, dyadic file
@@ -64,31 +64,14 @@ sources:
       Mayer, T., & Zignago, S. (2011). Notes on CEPII's distances measures: The
       GeoDist database. CEPII Working Paper 2011-25.
       https://www.cepii.fr/pdf_pub/wp/2011/wp2011-25.pdf
-    retrieved_at: null
-    sha256: null
+    retrieved_at: '2026-10-01T09:46:16Z'
+    sha256:
+      dist_cepii.zip: 1854825bab1abe7197f6e47295a7ced5f72c83bc95076768f733c4969ed86780
     notes: >-
-      zip holds dist_cepii as stata and excel. no year dimension so it is static
-      across the panel and states created after the last revision are missing.
-      with dyad fixed effects every column here drops out by construction
-
-  - id: eurostat_migration
-    name: Eurostat migr_pop1ctz, population by citizenship
-    url: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/migr_pop1ctz?format=JSON&lang=EN
-    kind: api
-    license: >-
-      European Commission reuse policy, Decision 2011/833/EU, free reuse with
-      acknowledgement
-    citation: >-
-      Eurostat. Population on 1 January by age group, sex and citizenship
-      (migr_pop1ctz). https://ec.europa.eu/eurostat/databrowser/view/migr_pop1ctz
-    retrieved_at: null
-    sha256: null
-    notes: >-
-      json-stat 2.0, no key needed. dimension codes still unconfirmed which is
-      why the fetch module is a stub. eu and efta only, reporting rows for
-      australia israel azerbaijan armenia georgia do not exist, drop them with a
-      count and never fill with zeros. geo codes are not iso3, EL and UK go
-      through country_map.csv
+      the zip holds a single dist_cepii.xls from 2004, no stata file, so pandas
+      needs xlrd. 50176 rows on iso3 codes, dummies come as 0/1 ints and have to
+      become nullable booleans. no year dimension, states created after the last
+      revision are simply missing
 
   - id: wikidata
     name: Wikidata Query Service
@@ -99,49 +82,41 @@ sources:
     retrieved_at: null
     sha256: null
     notes: >-
-      only used to resolve entries to wikipedia article titles per language,
-      which is what pageviews needs. 60s query timeout so slice by year
+      performer birth date P569 and sex P21. a plain name match is not enough,
+      "Sergey Lazarev" alone returns six different people, so the query has to
+      constrain to eurovision participants. bands have neither property, that is
+      roughly a third of all entries
 
-  - id: wikimedia_pageviews
-    name: Wikimedia REST pageviews, per article daily
-    url: https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{project}/{access}/{agent}/{article}/daily/{start}/{end}
+  - id: google_trends
+    name: Google Trends via pytrends
+    url: https://trends.google.com/
     kind: api
-    license: CC0 1.0
-    citation: Wikimedia Foundation. Wikimedia REST API. https://wikimedia.org/api/rest_v1/
+    license: >-
+      no public reuse licence, unofficial endpoint through pytrends. aggregated
+      data, no individual users
+    citation: Google Trends, search interest by region and over time
     retrieved_at: null
     sha256: null
     notes: >-
-      starts 2015-07-01, anything built on it shortens the panel so every model
-      gets reported twice, long panel without and short panel with. depends on
-      wikidata for the titles
-
-  - id: unga_ideal_points
-    name: UN General Assembly ideal points
-    url: https://dataverse.harvard.edu/api/access/datafile/13642051
-    kind: download
-    license: CC0 1.0
-    citation: >-
-      Bailey, M. A., Strezhnev, A., & Voeten, E. (2017). Estimating Dynamic
-      State Preferences from United Nations Voting Data. Journal of Conflict
-      Resolution, 61(2), 430-456. Data: United Nations General Assembly Voting
-      Data, Harvard Dataverse. https://doi.org/10.7910/DVN/LEJUQZ
-    retrieved_at: null
-    sha256: null
-    notes: >-
-      dataset version 39.0, ids checked 2026-09-10. IdealPointDyads1946-2025.tab
-      is 13642051 and is what the url points at, IdealpointsJuly2025.tab is
-      11824371, AgreementScores.csv is 11837234. which one we want is still open.
-      dataverse ids move with every version so recheck instead of trusting
+      interest_by_region normalises per country over the queried terms to sum
+      100, so it is a share and not a level. five terms per query, so batches
+      carry a fixed anchor term and get rescaled against it. a zero means below
+      one percent of the anchor and not no interest. the series is sampled, two
+      identical calls differ, so the raw responses go to disk or the pipeline is
+      not reproducible. cut the window the day before the final, the contest day
+      itself is leakage
 
   - id: manual_country_map
-    name: ESC country name to ISO3, Eurostat geo and Wikidata QID
+    name: country name and code bridge
     url: data/manual/country_map.csv
     kind: manual
     license: CC0 1.0
     citation: this project
     retrieved_at: null
     sha256: null
-    notes: the only bridge between source spellings and the iso3 join key
+    notes: >-
+      bridges three vocabularies: spelled out names from contestants.csv,
+      lowercase iso2 from votes.csv, and iso3 for cepii. nothing joins on names
 
   - id: manual_voting_regimes
     name: voting regime per contest year
@@ -153,6 +128,28 @@ sources:
     sha256: null
     notes: which vote types exist in a given year, per the table in README.md
 
+  - id: manual_contest_dates
+    name: date of each final
+    url: data/manual/contest_dates.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project, from the wikipedia page per contest year
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      needed to place the google trends window, which ends the day before the
+      final
+
+  - id: manual_song_language
+    name: main language per entry
+    url: data/manual/song_language.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project, from the wikipedia page per contest year
+    retrieved_at: null
+    sha256: null
+    notes: in no dataset, typed in by hand
+
   - id: manual_recent_entries
     name: entries after the upstream datasets end
     url: data/manual/recent_entries.csv
@@ -161,7 +158,9 @@ sources:
     citation: this project
     retrieved_at: null
     sha256: null
-    notes: upstream stops at 2023, anything later is typed in by hand
+    notes: >-
+      the entry side of 2024 onwards. the vote side of those years comes from
+      eurovisionworld, by hand it would be a thousand rows per year
 
 # considered and rejected, listed so nobody adds them later thinking nobody looked
 excluded:
@@ -171,3 +170,21 @@ excluded:
   - id: tmdb
     name: TMDB API
     reason: terms of use prohibit machine learning applications
+  - id: youtube_view_counts
+    name: YouTube Data API view counts
+    reason: >-
+      only returns today's count, so an old entry carries every view it got
+      because it won. that is the leak the published work admits to
+  - id: audio_features
+    name: audio feature extraction
+    reason: >-
+      published work gets 1-8% of the variance out of them and spotify shut its
+      audio api in 2024. the song effect comes from the receiver effect instead
+  - id: eurostat_migration
+    name: Eurostat migr_pop1ctz
+    reason: dropped with the team on 2026-09-20, dimension codes never confirmed
+  - id: wikimedia_pageviews
+    name: Wikimedia REST pageviews
+    reason: >-
+      dropped with the team on 2026-09-17 in favour of google trends, which is
+      available per country and therefore at the pair level

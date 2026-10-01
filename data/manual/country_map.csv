@@ -1,16 +1,116 @@
 # hand maintained, no pipeline stage writes this
-# the only bridge between source spellings and the iso3 join key
-# eurostat_geo is not iso2, EL for greece and UK for the uk
-# valid_to empty means still current
-# qids checked against wdt:P298 on 2026-09-10
-esc_name,iso3,eurostat_geo,wikidata_qid,valid_from,valid_to,notes
-Austria,AUT,AT,Q40,1957,,reference row
-Sweden,SWE,SE,Q34,1958,,reference row
-Greece,GRC,EL,Q41,1974,,eurostat geo is EL not GR
-United Kingdom,GBR,UK,Q145,1957,,"eurostat geo is UK not GB, add a row per spelling the sources use"
-Yugoslavia,YUG,,Q83286,1961,1992,"sfr yugoslavia, iso 3166-3, no eurostat series, TODO verify cepii coverage"
-Serbia and Montenegro,SCG,,Q37024,2004,2005,"esc spells it 'Serbia & Montenegro', add that as its own row, withdrew after 2005"
-Serbia,SRB,RS,Q403,2007,,"separate entrant from 2007, do not carry SCG results forward onto SRB"
-Montenegro,MNE,ME,Q236,2007,,"separate entrant from 2007"
-F.Y.R. Macedonia,MKD,MK,Q221,1998,2018,"same state as the row below, renamed 2019, TODO add a row per spelling seen in the data"
-North Macedonia,MKD,MK,Q221,2019,2022,"renamed state, same qid and iso3 as the row above, last took part 2022"
+# the only bridge between source labels and the iso3 join key
+# contestants.csv spells countries out, votes.csv uses lowercase iso2, cepii uses iso3
+# label      exactly as it appears in a source file
+# kind       name or iso2, which vocabulary the label belongs to
+# valid_from first contest year, empty means from the start
+# valid_to   last contest year, empty means still current
+# generated once from the raw files on 2026-10-01 and hand-checked since
+label,iso3,kind,valid_from,valid_to,notes
+ad,AND,iso2,,,
+al,ALB,iso2,,,
+am,ARM,iso2,,,
+at,AUT,iso2,,,
+au,AUS,iso2,,,
+az,AZE,iso2,,,
+ba,BIH,iso2,,,
+be,BEL,iso2,,,
+bg,BGR,iso2,,,
+by,BLR,iso2,,,
+ch,CHE,iso2,,,
+cs,SCG,iso2,2004,2006,"serbia and montenegro, still voted in 2006 after withdrawing"
+cy,CYP,iso2,,,
+cz,CZE,iso2,,,
+de,DEU,iso2,,,
+dk,DNK,iso2,,,
+ee,EST,iso2,,,
+es,ESP,iso2,,,
+fi,FIN,iso2,,,
+fr,FRA,iso2,,,
+gb,GBR,iso2,,,
+ge,GEO,iso2,,,
+gr,GRC,iso2,,,
+hr,HRV,iso2,,,
+hu,HUN,iso2,,,
+ie,IRL,iso2,,,
+il,ISR,iso2,,,
+is,ISL,iso2,,,
+it,ITA,iso2,,,
+lt,LTU,iso2,,,
+lu,LUX,iso2,,,
+lv,LVA,iso2,,,
+ma,MAR,iso2,,,
+mc,MCO,iso2,,,
+md,MDA,iso2,,,
+me,MNE,iso2,,,
+mk,MKD,iso2,,,
+mt,MLT,iso2,,,
+nl,NLD,iso2,,,
+no,NOR,iso2,,,
+pl,POL,iso2,,,
+pt,PRT,iso2,,,
+ro,ROU,iso2,,,
+rs,SRB,iso2,,,
+ru,RUS,iso2,,,
+se,SWE,iso2,,,
+si,SVN,iso2,,,
+sk,SVK,iso2,,,
+sm,SMR,iso2,,,
+tr,TUR,iso2,,,
+ua,UKR,iso2,,,
+wld,WLD,iso2,2023,,"rest of the world televote, not a country, no cepii row"
+yu,YUG,iso2,1961,1992,sfr yugoslavia
+Albania,ALB,name,,,
+Andorra,AND,name,,,
+Armenia,ARM,name,,,
+Australia,AUS,name,,,guest participant since 2015
+Austria,AUT,name,,,
+Azerbaijan,AZE,name,,,
+Belarus,BLR,name,,,
+Belgium,BEL,name,,,
+Bosnia & Herzegovina,BIH,name,,,
+Bulgaria,BGR,name,,,
+Croatia,HRV,name,,,
+Cyprus,CYP,name,,,
+Czech Republic,CZE,name,,,"same country as Czechia, both spellings appear"
+Czechia,CZE,name,,,"same country as Czech Republic, both spellings appear"
+Denmark,DNK,name,,,
+Estonia,EST,name,,,
+Finland,FIN,name,,,
+France,FRA,name,,,
+Georgia,GEO,name,,,
+Germany,DEU,name,,,
+Greece,GRC,name,,,
+Hungary,HUN,name,,,
+Iceland,ISL,name,,,
+Ireland,IRL,name,,,
+Israel,ISR,name,,,"member of the ebu, not geographically european"
+Italy,ITA,name,,,
+Latvia,LVA,name,,,
+Lithuania,LTU,name,,,
+Luxembourg,LUX,name,,,
+Malta,MLT,name,,,
+Moldova,MDA,name,,,
+Monaco,MCO,name,,,
+Montenegro,MNE,name,,,
+Morocco,MAR,name,,,"took part once, 1980"
+Netherlands,NLD,name,,,
+North Macedonia,MKD,name,,,renamed from F.Y.R. Macedonia in 2019
+North MacedoniaN.Macedonia,MKD,name,2019,,"typo in contestants.csv, two labels glued together"
+Norway,NOR,name,,,
+Poland,POL,name,,,
+Portugal,PRT,name,,,
+Romania,ROU,name,,,
+Russia,RUS,name,,2021,excluded from 2022
+San Marino,SMR,name,,,
+Serbia,SRB,name,,,
+Serbia & Montenegro,SCG,name,2004,2005,"iso 3166-3, competed 2004 and 2005 only"
+Slovakia,SVK,name,,,
+Slovenia,SVN,name,,,
+Spain,ESP,name,,,
+Sweden,SWE,name,,,
+Switzerland,CHE,name,,,
+Turkey,TUR,name,,2012,last took part 2012
+Ukraine,UKR,name,,,
+United Kingdom,GBR,name,,,
+Yugoslavia,YUG,name,1961,1992,"sfr yugoslavia, iso 3166-3"

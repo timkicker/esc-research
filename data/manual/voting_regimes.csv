@@ -71,6 +71,6 @@ year,jury_share,televote_share,separately_reported,row_vote,notes
 2021,0.5,0.5,true,false,jury and televote reported separately
 2022,0.5,0.5,true,false,jury and televote reported separately
 2023,0.5,0.5,true,true,"grand final 50/50 reported separately; semi-finals televote only, no juries; Rest of the World vote added"
-2024,,,,,TODO verify against the official rules for this year
-2025,,,,,TODO verify against the official rules for this year
-2026,,,,,TODO verify against the official rules for this year
+2024,0.5,0.5,true,true,"grand final 50/50 reported separately, rest of the world vote counted; verified 2026-10-01 against the scraped scoreboards"
+2025,0.5,0.5,true,true,"grand final 50/50 reported separately, rest of the world vote counted; verified 2026-10-01 against the scraped scoreboards"
+2026,0.5,0.5,true,true,"grand final 50/50 reported separately, rest of the world vote counted; verified 2026-10-01 against the scraped scoreboards"

@@ -42,11 +42,11 @@ def write(name: str, header: list[str], rows: list[list]) -> None:
 
 
 def main() -> None:
-    write(
-        "country_map",
-        ["esc_name", "iso3", "eurostat_geo", "wikidata_qid", "valid_from", "valid_to"],
-        [[name, iso3, geo, qid, 1956, ""] for name, iso3, geo, qid in COUNTRIES],
-    )
+    labels = []
+    for name, iso3, _geo, _qid in COUNTRIES:
+        labels.append([name, iso3, "name", 1956, ""])
+        labels.append([iso3.lower()[:2], iso3, "iso2", 1956, ""])
+    write("country_map", ["label", "iso3", "kind", "valid_from", "valid_to"], labels)
 
     write(
         "voting_regimes",
@@ -72,7 +72,9 @@ def main() -> None:
                     place,
                     100 - place,
                     "true",
-                    "national final",
+                    30 + place,
+                    "female" if place % 2 else "male",
+                    "english",
                 ]
             )
     write(
@@ -88,7 +90,9 @@ def main() -> None:
             "place",
             "points_total",
             "qualified",
-            "selection_type",
+            "artist_age",
+            "artist_sex",
+            "song_language",
         ],
         entries,
     )
@@ -145,23 +149,6 @@ def main() -> None:
         static,
     )
 
-    # deliberately incomplete, eurostat has no rows for every pair
-    migration = []
-    for year in YEARS:
-        for i, geo in enumerate(ISO3[:6]):
-            for j, citizen in enumerate(ISO3[:6]):
-                if geo == citizen:
-                    continue
-                migration.append([year, geo, citizen, 1000 * (i + 1) + j])
-    write("migration", ["year", "geo_iso3", "citizen_iso3", "population"], migration)
-
-    # pageviews only exist from 2015-07-01, so 2015 entries have none
-    views = []
-    for i, iso3 in enumerate(ISO3):
-        for day in ("2016-04-01", "2016-04-02"):
-            views.append([f"2016-{iso3}", "en", day, 500 + i])
-    write("pageviews", ["entry_id", "wiki_lang", "date", "views"], views)
-
     write(
         "entries_manual",
         [
@@ -175,7 +162,9 @@ def main() -> None:
             "place",
             "points_total",
             "qualified",
-            "selection_type",
+            "artist_age",
+            "artist_sex",
+            "song_language",
         ],
         [],
     )

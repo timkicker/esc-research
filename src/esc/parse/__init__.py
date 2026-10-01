@@ -24,7 +24,9 @@ SCHEMA: dict[str, dict[str, str]] = {
         "place": "Int16",
         "points_total": "Int32",
         "qualified": "boolean",
-        "selection_type": "string",
+        "artist_age": "Int16",
+        "artist_sex": "string",
+        "song_language": "string",
     },
     "votes": {
         "year": "int16",
@@ -33,32 +35,6 @@ SCHEMA: dict[str, dict[str, str]] = {
         "to_iso3": "string",
         "vote_type": "string",
         "points": "Int16",
-    },
-    "jurors": {
-        "year": "int16",
-        "country_iso3": "string",
-        "juror_letter": "string",
-        "entry_id": "string",
-        "rank": "Int16",
-    },
-    "odds": {
-        "year": "int16",
-        "entry_id": "string",
-        "bookmaker": "string",
-        "date": "datetime64[ns]",
-        "decimal_odds": "float64",
-    },
-    "pageviews": {
-        "entry_id": "string",
-        "wiki_lang": "string",
-        "date": "datetime64[ns]",
-        "views": "Int64",
-    },
-    "migration": {
-        "year": "int16",
-        "geo_iso3": "string",
-        "citizen_iso3": "string",
-        "population": "Int64",
     },
     "dyad_static": {
         "iso_o": "string",
@@ -72,11 +48,6 @@ SCHEMA: dict[str, dict[str, str]] = {
         "comcol": "boolean",
         "smctry": "boolean",
     },
-    "audio_features": {
-        "entry_id": "string",
-        "feature_name": "string",
-        "value": "float64",
-    },
     "voting_regimes": {
         "year": "int16",
         "jury_share": "float64",
@@ -85,12 +56,40 @@ SCHEMA: dict[str, dict[str, str]] = {
         "row_vote": "boolean",
     },
     "country_map": {
-        "esc_name": "string",
+        "label": "string",
         "iso3": "string",
-        "eurostat_geo": "string",
-        "wikidata_qid": "string",
-        "valid_from": "int16",
+        "kind": "string",
+        "valid_from": "Int16",
         "valid_to": "Int16",
+    },
+    "contest_dates": {
+        "year": "int16",
+        "final_date": "datetime64[ns]",
+    },
+    "artists": {
+        "entry_id": "string",
+        "artist_age": "Int16",
+        "artist_sex": "string",
+    },
+    "song_language": {
+        "entry_id": "string",
+        "language": "string",
+    },
+    # one row per voting country and entry, the whole point of using trends
+    "trends": {
+        "year": "int16",
+        "from_iso3": "string",
+        "entry_id": "string",
+        "web_interest": "float64",
+        "youtube_interest": "float64",
+        "censored": "boolean",
+    },
+    "lyric_features": {
+        "entry_id": "string",
+        "sentiment": "string",
+        "repetition_verse": "boolean",
+        "repetition_chorus": "boolean",
+        "theme": "string",
     },
 }
 

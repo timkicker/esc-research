@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
+
 from esc import io
 from esc.build import left_join, log, log_counts, require_non_empty
 from esc.parse import VOTE_TYPES, enforce
@@ -17,6 +19,14 @@ STEP = "votes"
 def build() -> Path:
     votes = io.read_parquet("votes", "interim")
     regimes = io.read_parquet("voting_regimes", "interim")
+
+    scraped = io.parquet_path("votes_recent", "interim")
+    if scraped.exists():
+        recent = io.read_parquet("votes_recent", "interim")
+        log(STEP, f"votes_recent: {len(recent)} scraped rows")
+        votes = pd.concat([votes, recent], ignore_index=True)
+    else:
+        log(STEP, "votes_recent: file not there yet, years after 2023 are missing")
     n_in = len(votes)
 
     bad = sorted(set(votes["vote_type"].dropna()) - set(VOTE_TYPES))

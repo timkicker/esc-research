@@ -1,4 +1,4 @@
-.PHONY: install data parse build all test lint clean-interim clean-all
+.PHONY: install data parse build model all test lint clean-interim clean-all
 
 install:
 	@echo ">> installing dependencies"
@@ -15,6 +15,10 @@ parse:
 build:
 	@echo ">> building processed tables into data/processed"
 	uv run python -m esc.pipeline build
+
+model:
+	@echo ">> fitting models, leave-one-year-out"
+	uv run python -m esc.models.run
 
 all: data parse build
 	@echo ">> pipeline finished"

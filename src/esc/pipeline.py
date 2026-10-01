@@ -10,23 +10,19 @@ import sys
 
 FETCH = [
     "eurovision_dataset",
-    "mirovision",
     "cepii_geodist",
-    "eurostat",
+    "eurovisionworld",
     "wikidata",
-    "pageviews",
-    "unga",
+    "google_trends",
 ]
 
 PARSE = [
     "manual",
     "eurovision_dataset",
-    "mirovision",
     "cepii_geodist",
-    "eurostat",
+    "eurovisionworld",
     "wikidata",
-    "pageviews",
-    "unga",
+    "google_trends",
 ]
 
 BUILD = ["entries", "votes", "dyads", "features"]
