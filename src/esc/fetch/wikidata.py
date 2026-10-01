@@ -1,14 +1,8 @@
-"""wikidata sparql, article titles per entry
+"""wikidata sparql, performer birth date P569 and sex P21
 
-not written yet, missing the query
-
-open before it can be written: which item an entry actually is, the song, the
-performance or the country participation, they are not all present in every
-year, the property path from there to year and country, and which sitelinks to
-take per country
-
-endpoint is https://query.wikidata.org/sparql with
-Accept: application/sparql-results+json, it times out after 60s so slice by year
+not written yet. a plain name match is not enough, "Sergey Lazarev" alone
+returns six different people, so the query has to constrain to eurovision
+participants. bands have neither property, that is roughly a third of entries
 """
 
 from __future__ import annotations

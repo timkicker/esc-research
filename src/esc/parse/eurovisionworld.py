@@ -1,12 +1,7 @@
-"""rendered eurovisionworld scoreboards -> interim votes_recent
+"""rendered eurovisionworld scoreboards -> interim votes_recent and entries_recent
 
-the table is a matrix. the header row carries one cell per voting country with
-a data-from attribute, every data row has id="tr_<iso2>" for the receiving
-country, and the point cells start three columns after the header cells line up,
-because each row begins with rank, flag, name and total
-
-output has the same shape as the votes table from the spijkervet release so the
-two can be concatenated in build/votes.py
+the scoreboard is a matrix, header cells carry data-from and rows carry
+id="tr_<iso2>". output matches the spijkervet tables so build can concatenate
 """
 
 from __future__ import annotations

@@ -10,8 +10,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-# nullable dtypes throughout, a missing running order and a running order of
-# zero are not the same thing
+# nullable dtypes throughout, a missing running order is not a zero one
 SCHEMA: dict[str, dict[str, str]] = {
     "entries": {
         "entry_id": "string",

@@ -115,10 +115,7 @@ def main() -> None:
 
     summary = pd.DataFrame(rows)
     io.write_parquet(summary, "model_summary", "processed")
-    # the receiver effect is what every other country gave the same entry, so a
-    # model that uses it explains the result instead of forecasting it. the
-    # calibration figure has to come from something that could have run on the
-    # morning of the final
+    # the receiver effect explains a result, it does not forecast one
     forecasting = {k: v for k, v in kept.items() if "receiver" not in k[1]}
     scored = summary.set_index(["vote_type", "features", "model"])
     best = max(forecasting, key=lambda k: scored.loc[k, "spearman"])

@@ -1,15 +1,8 @@
 """the directed dyad panel, (year, round, vote_type, from_iso3, to_iso3)
 
-from_iso3 awards, to_iso3 receives, the pair is never collapsed
-
-pairs that awarded nothing stay in with points = 0, only the top ten get points
-so dropping the zeros would leave a panel of successes and turn every
-coefficient into a selection artefact
-
-the panel is finals only and from 2016. the semi-finals have a different set of
-voters and from 2023 no jury at all, and before 2016 the jury and televote split
-is not reported. the semi-final result still enters, but as a column on the
-entry, not as its own panel row
+finals from 2016 only. semi-finals have a different voter set and no jury from
+2023, and before 2016 the split was never reported. the semi-final result still
+enters, as a column on the entry rather than its own row
 """
 
 from __future__ import annotations

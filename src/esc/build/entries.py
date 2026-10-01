@@ -22,10 +22,9 @@ def _optional(name: str) -> pd.DataFrame | None:
 
 
 def _fill_from(frame: pd.DataFrame, name: str, columns: dict[str, str]) -> None:
-    """fill columns from an interim table a teammate still owes us
+    """fill columns from an optional interim table
 
-    mapped by entry_id rather than merged, so a missing file costs a log line
-    and not a pile of _x and _y suffixes
+    mapped by entry_id rather than merged, no _x and _y suffixes
     """
     path = io.parquet_path(name, "interim")
     if not path.exists():

@@ -26,9 +26,8 @@ ENTRY_KEYS = [*SHOW_KEYS, "to_iso3"]
 def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
     """mean points this ordered pair exchanged in earlier contests
 
-    uses the whole vote history, not just the panel years, because the point of
-    the pair features is the long memory. strictly earlier years only, so it
-    cannot leak the year it is predicting
+    the whole vote history, not just the panel years, and strictly earlier years
+    so it cannot leak the year it predicts
     """
     history = io.read_parquet("votes", "processed")
     history = history[history["round"] == "final"]
@@ -59,8 +58,7 @@ def build() -> Path:
     n_in = len(panel)
     points = panel["points"].astype("float64")
 
-    # share of the pool handed out in that show, so years and vote types are
-    # comparable. the pool doubled in 2016 when the split was introduced
+    # share of the pool, the only way years and vote types compare
     pool = points.groupby([panel[k] for k in SHOW_KEYS]).transform("sum")
     panel["points_share"] = np.where(pool > 0, points / pool, np.nan)
 

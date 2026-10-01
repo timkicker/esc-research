@@ -1,12 +1,8 @@
 """eurovisionworld results for the years after the spijkervet release
 
-the scoreboard is built by javascript and the jury/televote switch hangs on a
-button, so this is the one fetch module that drives a real browser instead of
-the cached http client. what lands in data/raw is the rendered page, one file
-per year and view, and the parse step works offline from there
-
-robots.txt disallows only /bonus/ and /cdn-cgi/, the results pages are allowed.
-we still throttle and we never fetch a year twice
+the only fetch module that drives a browser, the scoreboard is rendered by
+javascript and the jury/televote switch hangs on a button. the rendered page
+lands in data/raw, one file per year and view, and parse works offline from there
 """
 
 from __future__ import annotations

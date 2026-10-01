@@ -1,13 +1,7 @@
-"""sparql results -> entry_articles
+"""sparql results -> interim artists
 
-not written yet, there is no query so there is no result shape either
-
-target is (entry_id, wiki_lang, article_title), plumbing rather than analysis
-which is why it is not in the README.md schema, add it to parse.SCHEMA once the
-query is settled so it gets the same dtype enforcement as everything else
-
-titles have to be canonical, a redirect gives pageviews for the redirect only
-which is a quiet undercount not an error
+not written yet, no query so no result shape. target is the artists table,
+entry_id with artist_age and artist_sex
 """
 
 from __future__ import annotations

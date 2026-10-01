@@ -35,11 +35,7 @@ def ranking_metrics(entries: pd.DataFrame, truth: str, predicted: str) -> pd.Dat
 
 
 def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dict:
-    """what pure chance looks like, with an interval, so 7.9 can be judged
-
-    the published work reports a mean rank error without this and the number is
-    then impossible to place
-    """
+    """what chance looks like, with an interval, so a rank error can be placed"""
     generator = rng()
     errors = []
     for (_year, _vote_type), group in entries.groupby(["year", "vote_type"]):
@@ -62,10 +58,9 @@ def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dic
 def win_probabilities(
     pairs: pd.DataFrame, predicted: str, residuals: np.ndarray, draws: int = 2000
 ) -> pd.DataFrame:
-    """simulate the contest, count how often each entry comes first
+    """simulate each contest, count how often an entry comes first
 
-    a point prediction cannot say how sure it is. resampling the model's own
-    residuals onto the pair predictions and re-adding them up can
+    resamples the model's own residuals onto the pair predictions
     """
     generator = rng()
     out = []
@@ -104,10 +99,9 @@ CALIBRATION_BINS = (0.0, 0.01, 0.05, 0.10, 0.25, 0.50, 1.0)
 
 
 def calibration_curve(entries: pd.DataFrame, won: str, probability: str):
-    """predicted probability against observed frequency, for the canvas figure
+    """predicted probability against observed frequency
 
-    fixed bins, not quantiles. most entries sit at a win probability of nearly
-    zero and quantile bins collapse into a single useless bucket
+    fixed bins, not quantiles, almost every entry sits near zero
     """
     frame = entries[[probability, won]].copy()
     frame["bucket"] = pd.cut(

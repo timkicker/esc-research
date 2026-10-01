@@ -29,8 +29,7 @@ def left_join(
 ) -> pd.DataFrame:
     """left join and report the keys that found nothing
 
-    validate defaults to m:1 so a non unique right side raises instead of
-    quietly multiplying rows
+    validate is m:1, a non unique right side raises instead of multiplying rows
     """
     before = len(left)
     merged = left.merge(right, on=on, how="left", validate=validate, indicator="_merge")
@@ -59,11 +58,9 @@ def optional_join(
     step: str,
     rename: dict[str, str] | None = None,
 ) -> pd.DataFrame:
-    """join a table that a teammate still owes us, or say it is missing
+    """join a table a teammate still owes us, or log that it is missing
 
-    anna-ilona and zhenya deliver trends and the lyric features separately. the
-    panel must build without them, otherwise the whole pipeline waits on two
-    people and we have thirteen days
+    the panel must build without trends and the lyric features
     """
     from esc import io
 

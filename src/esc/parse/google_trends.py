@@ -1,10 +1,7 @@
-"""raw trends responses -> trends
+"""raw trends responses -> interim trends
 
-not written yet, depends on fetch/google_trends.py
-
-rescale every batch against the anchor, then one row per (year, voting country,
-entry_id) with the web and the youtube series side by side. a zero stays a zero
-but gets a censored flag, it means below one percent of the anchor
+not written yet. rescale each batch against the anchor, one row per year, voting
+country and entry. a zero keeps a censored flag, it means below one percent
 """
 
 from __future__ import annotations

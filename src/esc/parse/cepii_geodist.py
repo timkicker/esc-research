@@ -1,18 +1,8 @@
 """cepii dist_cepii -> interim dyad_static
 
-the zip holds one dist_cepii.xls from 2004, no stata file, so this needs xlrd.
-codes are already iso3 and the column names already match the interim schema,
-so the mapping is the identity. what does need work is the dummies, they arrive
-as 0/1 integers and have to become nullable booleans
-
-the file is filtered down to the countries that actually appear in the contest.
-50176 world pairs are not useful here and make every later join slower
-
-the file is from 2004 and its codes show it. romania is ROM, the pre-2002 code.
-serbia and montenegro is YUG, because in 2004 that is what yugoslavia had become.
-we rename ROM and we copy the YUG rows onto SCG and SRB, which is defensible
-because all three reference belgrade. montenegro, monaco and the rest of the
-world vote have no row at all and stay missing, the join leaves them NA
+the zip holds one xls from 2004 and its codes show their age, see RENAME and
+PROXY below. filtered down to contest countries, 50176 world pairs only slow
+every later join
 """
 
 from __future__ import annotations
@@ -30,8 +20,9 @@ MEMBER = "dist_cepii.xls"
 DUMMIES = ("contig", "comlang_off", "comlang_ethno", "colony", "comcol", "smctry")
 KEEP = ("iso_o", "iso_d", "dist", "distw", *DUMMIES)
 
+# romania is still the pre-2002 code here
 RENAME = {"ROM": "ROU"}
-# our code -> the cepii code we borrow it from, see the module docstring
+# in 2004 yugoslavia was serbia and montenegro, all three reference belgrade
 PROXY = {"SCG": "YUG", "SRB": "YUG"}
 
 

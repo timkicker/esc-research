@@ -1,13 +1,9 @@
 """spijkervet release csvs -> interim entries and votes
 
-the two files disagree about how a country is written. contestants.csv spells
-the name out, votes.csv uses lowercase iso2. both go through country_map, which
-is why parse.manual has to run first
-
-votes.csv is wide, with a jury and a televote column side by side. the interim
-schema is long, one row per vote_type, so it gets melted here. where the split
-is not reported the row becomes 'combined', never a 'jury' row, otherwise the
-build step would compare a combined series against a jury series
+the two files name countries differently, contestants spells them out and votes
+uses lowercase iso2, so both go through country_map and parse.manual runs first.
+votes is wide and gets melted, and where no split is reported the row becomes
+'combined' rather than a 'jury' row that would not mean the same thing
 """
 
 from __future__ import annotations
@@ -156,9 +152,7 @@ def parse_votes() -> Path:
 
     out = enforce(pd.concat(parts, ignore_index=True), "votes")
 
-    # the source ships a full matrix including the diagonal, always at zero.
-    # no contest rule lets a country vote for itself, so a non-zero one would
-    # mean the from and to columns are swapped
+    # the source ships the diagonal at zero, a non-zero one means swapped columns
     self_pairs = out["from_iso3"] == out["to_iso3"]
     scored = out[self_pairs & (out["points"] > 0)]
     if len(scored):
