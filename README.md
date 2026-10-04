@@ -58,6 +58,7 @@ Urls, licenses and checksums in `sources.yml`.
 - Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0 — distance, shared border, shared language per pair.
 - Wikidata (CC0 1.0) — artist birth date and sex.
 - Google Trends via pytrends — search interest per entry and per voting country.
+- [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset), our teammate's repo, GPL-3.0 — llm labels from the lyrics and the song language, pinned to a commit. We read the data file and take no code.
 - The tables in `data/manual/` are ours, CC0 1.0.
 
 Not used: YouTube view counts, because the API only returns today's count. Audio features, because published work gets 1-8% of the variance out of them and Spotify shut its audio API in 2024. Spotify and TMDB at all, their terms forbid machine learning use. All of them are listed under `excluded:` in `sources.yml` with the reason.

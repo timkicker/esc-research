@@ -106,6 +106,21 @@ sources:
       not reproducible. cut the window the day before the final, the contest day
       itself is leakage
 
+  - id: team_dataset
+    name: teammate repo, lyrics analysis
+    url:
+      lyrics_analysis.json: https://raw.githubusercontent.com/ezvezdov/eurovision-dataset/6a53ab9b52922c06d0cab6cd3fbe9592286810be/processed/lyrics_analysis.json
+    kind: download
+    license: GPL-3.0, we read one data file and take no code
+    citation: Zviazdou, Y. (2026). eurovision-dataset. https://github.com/ezvezdov/eurovision-dataset
+    retrieved_at: '2026-10-04T06:40:21Z'
+    sha256:
+      lyrics_analysis.json: d40ed35f0828aab5f2f9b5e7810e783f2caefbdc6802f15483b2eb122ff5645e
+    notes: >-
+      437 finalists 2008-2026, llm labels from the lyrics: sentiment, theme, two
+      repetition flags, and the main language. pinned to the commit, the repo
+      still moves. its trends file is not used yet, 96.7% of the scores are zero
+
   - id: manual_country_map
     name: country name and code bridge
     url: data/manual/country_map.csv
@@ -139,16 +154,6 @@ sources:
     notes: >-
       needed to place the google trends window, which ends the day before the
       final
-
-  - id: manual_song_language
-    name: main language per entry
-    url: data/manual/song_language.csv
-    kind: manual
-    license: CC0 1.0
-    citation: this project, from the wikipedia page per contest year
-    retrieved_at: null
-    sha256: null
-    notes: in no dataset, typed in by hand
 
   - id: manual_recent_entries
     name: entries after the upstream datasets end

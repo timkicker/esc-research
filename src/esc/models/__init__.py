@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from esc import io
+from esc.parse.team_dataset import SENTIMENTS, THEMES
 
 SEED = 20260501
 
@@ -29,6 +30,10 @@ PAIR = [
 ]
 ATTENTION = ["web_interest", "youtube_interest"]
 RECEIVER = ["receiver_effect"]
+LYRICS = ["sentiment", "theme", "repetition_verse", "repetition_chorus"]
+
+# fixed categories, so a test year with a theme missing still gets every column
+CATEGORIES = {"sentiment": SENTIMENTS, "theme": THEMES}
 
 TARGET = "points"
 GROUP = "year"
@@ -39,6 +44,8 @@ def feature_sets(panel: pd.DataFrame) -> dict[str, list[str]]:
     """the four comparisons the canvas promises, minus what nobody delivered"""
     have = [c for c in ATTENTION if c in panel.columns]
     sets = {"pair": PAIR, "pair+receiver": PAIR + RECEIVER}
+    if "sentiment" in panel.columns:
+        sets["pair+lyrics"] = PAIR + LYRICS
     if have:
         sets["pair+attention"] = PAIR + have
         sets["all"] = PAIR + RECEIVER + have
@@ -56,12 +63,20 @@ def load(vote_type: str | None = None) -> pd.DataFrame:
 
 
 def design(panel: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
-    """numeric design matrix, booleans to 0/1, missing to the training median"""
-    out = panel[columns].copy()
-    for column in out.columns:
-        if str(out[column].dtype) == "boolean":
-            out[column] = out[column].astype("Float64")
-    return out.astype("float64")
+    """numeric design matrix, categories one-hot, booleans 0/1, missing stays NaN"""
+    parts = []
+    for column in columns:
+        if column in CATEGORIES:
+            values = panel[column].astype("string")
+            for level in CATEGORIES[column]:
+                dummy = (values == level).astype("Float64")
+                dummy[values.isna()] = pd.NA
+                parts.append(dummy.rename(f"{column}={level}"))
+        elif str(panel[column].dtype) == "boolean":
+            parts.append(panel[column].astype("Float64"))
+        else:
+            parts.append(panel[column])
+    return pd.concat(parts, axis=1).astype("float64")
 
 
 def totals(frame: pd.DataFrame, column: str) -> pd.DataFrame:

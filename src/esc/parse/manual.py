@@ -73,18 +73,6 @@ def parse_contest_dates() -> Path:
     return io.write_parquet(out, "contest_dates", "interim")
 
 
-def parse_song_language() -> Path:
-    df = _read("song_language")
-    placeholders = int(df["entry_id"].str.endswith(PLACEHOLDER_ISO3).sum())
-    df = df[~df["entry_id"].str.endswith(PLACEHOLDER_ISO3)].copy()
-    out = enforce(df, "song_language")
-    print(
-        f"[parse.manual] song_language: {len(out)} entries, "
-        f"{placeholders} placeholder row(s) dropped"
-    )
-    return io.write_parquet(out, "song_language", "interim")
-
-
 def parse_recent_entries() -> Path:
     """entries for the years after the upstream release, typed in by hand"""
     df = _read("recent_entries")
@@ -119,6 +107,5 @@ def parse() -> list[Path]:
         parse_country_map(),
         parse_voting_regimes(),
         parse_contest_dates(),
-        parse_song_language(),
         parse_recent_entries(),
     ]

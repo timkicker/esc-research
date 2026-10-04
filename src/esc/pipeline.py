@@ -14,6 +14,7 @@ FETCH = [
     "eurovisionworld",
     "wikidata",
     "google_trends",
+    "team_dataset",
 ]
 
 PARSE = [
@@ -23,6 +24,7 @@ PARSE = [
     "eurovisionworld",
     "wikidata",
     "google_trends",
+    "team_dataset",
 ]
 
 BUILD = ["entries", "votes", "dyads", "features"]
