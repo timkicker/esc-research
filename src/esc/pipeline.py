@@ -13,7 +13,6 @@ FETCH = [
     "cepii_geodist",
     "eurovisionworld",
     "wikidata",
-    "google_trends",
     "team_dataset",
 ]
 
@@ -23,7 +22,6 @@ PARSE = [
     "cepii_geodist",
     "eurovisionworld",
     "wikidata",
-    "google_trends",
     "team_dataset",
 ]
 

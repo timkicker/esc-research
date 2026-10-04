@@ -1,8 +1,8 @@
-"""teammate lyrics analysis -> interim lyric_features and song_language
+"""teammate repo -> interim lyric_features, song_language and trends
 
-country and year come from the record, not the key, the key glues them with
-underscores. unknown labels raise, a typo in the llm output should not become a
-new category
+lyrics: country and year come from the record, not the key. unknown labels
+raise, a typo in the llm output should not become a new category
+trends: target_iso is the voting country, song_country the entry
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from esc.parse import enforce, entry_id
 
 RAW_ID = "team_dataset"
 FILE = "lyrics_analysis.json"
+TRENDS_FILE = "trends_results.csv"
 
 SENTIMENTS = ("neutral", "sad", "funny")
 THEMES = (
@@ -38,6 +39,12 @@ def _check(series: pd.Series, allowed, what: str) -> None:
         raise ValueError(f"{what}: unknown value(s) {bad}, allowed {list(allowed)}")
 
 
+def _lookup(kind: str) -> dict[str, str]:
+    cmap = io.read_parquet("country_map", "interim")
+    rows = cmap[cmap["kind"] == kind]
+    return dict(zip(rows["label"], rows["iso3"], strict=True))
+
+
 def _records() -> pd.DataFrame:
     path = config.RAW / RAW_ID / FILE
     if not path.exists():
@@ -46,11 +53,9 @@ def _records() -> pd.DataFrame:
     return pd.DataFrame.from_records(list(raw.values()))
 
 
-def parse() -> list[Path]:
+def parse_lyrics() -> list[Path]:
     df = _records()
-    cmap = io.read_parquet("country_map", "interim")
-    names = cmap[cmap["kind"] == "name"]
-    lookup = dict(zip(names["label"], names["iso3"], strict=True))
+    lookup = _lookup("name")
 
     iso3 = df["country"].map(lookup)
     missing = sorted(set(df.loc[iso3.isna(), "country"]))
@@ -100,3 +105,47 @@ def parse() -> list[Path]:
         io.write_parquet(out_features, "lyric_features", "interim"),
         io.write_parquet(out_language, "song_language", "interim"),
     ]
+
+
+def parse_trends() -> Path:
+    path = config.RAW / RAW_ID / TRENDS_FILE
+    if not path.exists():
+        raise FileNotFoundError(f"{path} is missing, run `make data` first")
+    df = pd.read_csv(path, dtype="string", keep_default_na=False, na_values=[""])
+
+    names, codes = _lookup("name"), _lookup("iso2")
+    entry_iso3 = df["song_country"].map(names)
+    voter_iso3 = df["target_iso"].str.lower().map(codes)
+    for series, source, what in (
+        (entry_iso3, df["song_country"], "song_country"),
+        (voter_iso3, df["target_iso"], "target_iso"),
+    ):
+        missing = sorted(set(source[series.isna()]))
+        if missing:
+            raise ValueError(f"{TRENDS_FILE}: {what} not in country_map {missing}")
+
+    year = pd.to_numeric(df["year"]).astype("int16")
+    web = pd.to_numeric(df["trend_score"]).astype("float64")
+    youtube = pd.to_numeric(df["youtube_score"]).astype("float64")
+    out = pd.DataFrame(
+        {
+            "year": year,
+            "from_iso3": voter_iso3.astype("string"),
+            "entry_id": entry_id(year, entry_iso3.astype("string")).values,
+            "web_interest": web,
+            "youtube_interest": youtube,
+            # nothing measurable from either source, below the trends threshold
+            "censored": ((web == 0) & (youtube == 0)).astype("boolean"),
+        }
+    )
+    out = enforce(out, "trends")
+    print(
+        f"[parse.team_dataset] trends: {len(out)} rows, "
+        f"{out['censored'].mean():.0%} censored, years "
+        f"{out['year'].min()}-{out['year'].max()}"
+    )
+    return io.write_parquet(out, "trends", "interim")
+
+
+def parse() -> list[Path]:
+    return [*parse_lyrics(), parse_trends()]

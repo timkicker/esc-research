@@ -54,6 +54,11 @@ def feature_sets(panel: pd.DataFrame) -> dict[str, list[str]]:
     }
 
 
+def explanatory(sets: dict[str, list[str]]) -> set[str]:
+    """sets that use the receiver effect explain a result, they cannot forecast it"""
+    return {name for name, columns in sets.items() if set(RECEIVER) & set(columns)}
+
+
 def load(vote_type: str | None = None) -> pd.DataFrame:
     panel = io.read_parquet("features", "processed")
     panel = panel[panel["vote_type"].isin(["jury", "televote"])]

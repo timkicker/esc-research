@@ -15,7 +15,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import RidgeCV
 
 from esc import io
-from esc.models import TARGET, design, feature_sets, load, totals
+from esc.models import TARGET, design, explanatory, feature_sets, load, totals
 from esc.models.evaluate import (
     brier_and_log_loss,
     calibration_curve,
@@ -78,6 +78,7 @@ def evaluate(panel: pd.DataFrame, columns: list[str], estimator: str) -> dict:
 def main() -> None:
     rows = []
     kept = {}
+    explain_only = set()
     for vote_type in VOTE_TYPES:
         panel = load(vote_type)
         sets = feature_sets(panel)
@@ -92,6 +93,7 @@ def main() -> None:
             f"   chance rank error {chance['rank_error']:.2f} "
             f"(95% {chance['low']:.2f} to {chance['high']:.2f})"
         )
+        explain_only |= explanatory(sets)
         for name, columns in sets.items():
             for estimator in ESTIMATORS:
                 result = evaluate(panel, columns, estimator)
@@ -116,7 +118,7 @@ def main() -> None:
     summary = pd.DataFrame(rows)
     io.write_parquet(summary, "model_summary", "processed")
     # the receiver effect explains a result, it does not forecast one
-    forecasting = {k: v for k, v in kept.items() if "receiver" not in k[1]}
+    forecasting = {k: v for k, v in kept.items() if k[1] not in explain_only}
     scored = summary.set_index(["vote_type", "features", "model"])
     best = max(forecasting, key=lambda k: scored.loc[k, "spearman"])
     io.write_parquet(forecasting[best], "model_entries", "processed")

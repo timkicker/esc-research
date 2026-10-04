@@ -30,11 +30,11 @@ def record(country, year, sentiment="sad", theme="heartbreak", main="no", chorus
 def lyrics_world(data_root):
     cmap = pd.DataFrame(
         {
-            "label": ["Austria", "Sweden", "Bosnia and Herzegovina"],
-            "iso3": ["AUT", "SWE", "BIH"],
-            "kind": "name",
-            "valid_from": pd.array([None] * 3, dtype="Int16"),
-            "valid_to": pd.array([None] * 3, dtype="Int16"),
+            "label": ["Austria", "Sweden", "Bosnia and Herzegovina", "at", "se"],
+            "iso3": ["AUT", "SWE", "BIH", "AUT", "SWE"],
+            "kind": ["name", "name", "name", "iso2", "iso2"],
+            "valid_from": pd.array([None] * 5, dtype="Int16"),
+            "valid_to": pd.array([None] * 5, dtype="Int16"),
         }
     )
     io.write_parquet(cmap, "country_map", "interim")
@@ -55,7 +55,7 @@ def test_records_become_lyric_features_and_languages(lyrics_world):
             "Bosnia_and_Herzegovina_2008": record("Bosnia and Herzegovina", 2008),
         }
     )
-    team_dataset.parse()
+    team_dataset.parse_lyrics()
     features = io.read_parquet("lyric_features", "interim").set_index("entry_id")
     assert set(features.index) == {"2025-AUT", "2025-SWE", "2008-BIH"}
     assert not features.loc["2025-AUT", "repetition_verse"]
@@ -65,16 +65,54 @@ def test_records_become_lyric_features_and_languages(lyrics_world):
     assert set(languages["language"]) == {"en"}
 
 
+def write_trends(rows: list[tuple]) -> None:
+    folder = config.RAW / team_dataset.RAW_ID
+    folder.mkdir(parents=True, exist_ok=True)
+    frame = pd.DataFrame(
+        rows,
+        columns=["year", "song_country", "target_iso", "trend_score", "youtube_score"],
+    )
+    frame["song"] = "a song"
+    frame["artist"] = "someone"
+    frame["target_country"] = "x"
+    frame["is_home_country"] = False
+    frame["status"] = "success"
+    frame.to_csv(folder / team_dataset.TRENDS_FILE, index=False)
+
+
+def test_trends_rows_land_on_voter_and_entry(lyrics_world):
+    write_trends([(2025, "Austria", "AT", 100, 100), (2025, "Austria", "SE", 0, 20)])
+    team_dataset.parse_trends()
+    out = io.read_parquet("trends", "interim").set_index("from_iso3")
+    assert set(out["entry_id"]) == {"2025-AUT"}
+    assert out.loc["SWE", "web_interest"] == 0
+    assert out.loc["SWE", "youtube_interest"] == 20
+    # one source still sees something, so it is not censored
+    assert not out.loc["SWE", "censored"]
+
+
+def test_trends_censored_only_when_both_sources_are_zero(lyrics_world):
+    write_trends([(2025, "Austria", "SE", 0, 0)])
+    team_dataset.parse_trends()
+    assert io.read_parquet("trends", "interim")["censored"].all()
+
+
+def test_trends_with_an_unknown_voter_raises(lyrics_world):
+    write_trends([(2025, "Austria", "ZZ", 5, 5)])
+    with pytest.raises(ValueError, match="target_iso"):
+        team_dataset.parse_trends()
+
+
 def test_an_unknown_label_raises(lyrics_world):
     lyrics_world({"Austria_2025": record("Austria", 2025, sentiment="angry")})
     with pytest.raises(ValueError, match="unknown value"):
-        team_dataset.parse()
+        team_dataset.parse_lyrics()
 
 
 def test_a_country_missing_from_the_map_raises(lyrics_world):
     lyrics_world({"Narnia_2025": record("Narnia", 2025)})
     with pytest.raises(ValueError, match="country_map"):
-        team_dataset.parse()
+        team_dataset.parse_lyrics()
 
 
 def test_the_committed_map_knows_the_lyrics_spelling():

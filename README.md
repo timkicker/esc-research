@@ -1,6 +1,6 @@
 # esc-research
 
-Eurovision voting data as a directed country-pair panel. How much of a vote is the song, how much is the relationship between the two countries, and does that split differ between the jury and the televote.
+Eurovision voting data as a directed country-pair panel. The question is how much of a vote comes from the song and how much from the relationship between the two countries. The second question is whether that split differs between the jury and the televote.
 
 Conventions, schema and the domain traps are in `README.md`. Read it before adding anything.
 
@@ -53,12 +53,11 @@ Only `data/manual/` is committed. `sources.yml` is committed too and the fetch s
 
 Urls, licenses and checksums in `sources.yml`.
 
-- Spijkervet, J. (2020). The Eurovision Song Contest Dataset v1.0. Zenodo. https://doi.org/10.5281/zenodo.4036457 — results, votes and lyrics up to 2023. No license file, the authors ask to be cited.
-- eurovisionworld.com — 2024 onwards, where the release stops. The scoreboard is built by javascript, so this one source needs a browser. robots.txt allows the results pages, we render each page once and keep it on disk.
-- Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0 — distance, shared border, shared language per pair.
-- Wikidata (CC0 1.0) — artist birth date and sex.
-- Google Trends via pytrends — search interest per entry and per voting country.
-- [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset), our teammate's repo, GPL-3.0 — llm labels from the lyrics and the song language, pinned to a commit. We read the data file and take no code.
+- Spijkervet, J. (2020). The Eurovision Song Contest Dataset v1.0. Zenodo. https://doi.org/10.5281/zenodo.4036457. Results, votes and lyrics up to 2023. No license file, the authors ask to be cited.
+- eurovisionworld.com for 2024 onwards, where the release stops. The scoreboard is built by javascript, so this one source needs a browser. robots.txt allows the results pages and we render each page once and keep it on disk.
+- Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0. Distance, shared border and shared language per pair.
+- Wikidata (CC0 1.0) for artist birth date and sex.
+- [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset), our teammate's repo, GPL-3.0. Llm labels from the lyrics, the song language and Google Trends per entry and voting country, pinned to a commit. We read the data files and take no code.
 - The tables in `data/manual/` are ours, CC0 1.0.
 
 Not used: YouTube view counts, because the API only returns today's count. Audio features, because published work gets 1-8% of the variance out of them and Spotify shut its audio API in 2024. Spotify and TMDB at all, their terms forbid machine learning use. All of them are listed under `excluded:` in `sources.yml` with the reason.

@@ -98,7 +98,6 @@ def test_every_source_in_the_real_manifest_has_a_module():
         "eurovisionworld": "eurovisionworld",
         "cepii_geodist": "cepii_geodist",
         "wikidata": "wikidata",
-        "google_trends": "google_trends",
         "team_dataset": "team_dataset",
     }
     for source in fetch.load_sources()["sources"]:

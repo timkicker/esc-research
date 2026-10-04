@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from esc import models
 from esc.models import evaluate
 
 
@@ -79,3 +80,12 @@ def test_calibration_uses_fixed_bins_not_quantiles():
     curve = evaluate.calibration_curve(frame, "won", "win_probability")
     assert len(curve) >= 2
     assert curve["n"].sum() == 20
+
+
+def test_every_set_with_the_receiver_effect_counts_as_explanatory():
+    # "all" does not say receiver in its name, it was once picked as a forecast
+    panel = pd.DataFrame(
+        columns=[*models.PAIR, *models.RECEIVER, "web_interest", "youtube_interest"]
+    )
+    sets = models.feature_sets(panel)
+    assert models.explanatory(sets) == {"pair+receiver", "all"}
