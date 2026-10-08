@@ -1,4 +1,4 @@
-"""cepii dist_cepii, the parse step unpacks the zip not this"""
+"""cepii dist_cepii, only downloaded here since the parse step unpacks the zip"""
 
 from __future__ import annotations
 

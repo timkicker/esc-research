@@ -1,8 +1,8 @@
 """spijkervet release csvs -> interim entries and votes
 
-the two files name countries differently, contestants spells them out and votes
-uses lowercase iso2, so both go through country_map and parse.manual runs first.
-votes is wide and gets melted, and where no split is reported the row becomes
+the two files name countries differently (contestants spells them out and votes
+uses lowercase iso2) so both go through country_map and parse.manual runs first.
+votes is wide and gets melted. where no split is reported the row becomes
 'combined' rather than a 'jury' row that would not mean the same thing
 """
 
@@ -91,7 +91,7 @@ def parse_entries() -> Path:
             f"[parse.eurovision_dataset] {int(twice.sum())} entries share a "
             f"country and year in {years}, numbered apart"
         )
-    # an entry that reached the final qualified, the big five never had to
+    # an entry that reached the final has qualified (the big five never had to)
     reached_final = {
         f"{y}-{c}" for y, c in zip(finals["year"], finals["country_iso3"], strict=True)
     }
@@ -152,7 +152,7 @@ def parse_votes() -> Path:
 
     out = enforce(pd.concat(parts, ignore_index=True), "votes")
 
-    # the source ships the diagonal at zero, a non-zero one means swapped columns
+    # the source ships the diagonal at zero so a non-zero one means swapped columns
     self_pairs = out["from_iso3"] == out["to_iso3"]
     scored = out[self_pairs & (out["points"] > 0)]
     if len(scored):

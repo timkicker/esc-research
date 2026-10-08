@@ -1,6 +1,6 @@
 """interim tables -> processed tables
 
-offline, and everything logs what went in, what came out and what did not match
+offline and everything logs what went in, what came out and what did not match
 because most surprising numbers here turn out to be a bad merge
 """
 
@@ -29,7 +29,7 @@ def left_join(
 ) -> pd.DataFrame:
     """left join and report the keys that found nothing
 
-    validate is m:1, a non unique right side raises instead of multiplying rows
+    validate is m:1 so a non unique right side raises instead of multiplying rows
     """
     before = len(left)
     merged = left.merge(right, on=on, how="left", validate=validate, indicator="_merge")
@@ -58,7 +58,7 @@ def optional_join(
     step: str,
     rename: dict[str, str] | None = None,
 ) -> pd.DataFrame:
-    """join a table a teammate still owes us, or log that it is missing
+    """join a table a teammate still owes us or log that it is missing
 
     the panel must build without trends and the lyric features
     """

@@ -50,7 +50,7 @@ def build_user_agent(email: str | None) -> str:
     return f"{PROJECT}/{VERSION} (mailto:{email})"
 
 
-# fails at import on purpose, better here than halfway through a download
+# fails at import on purpose because that beats failing halfway through a download
 USER_AGENT = build_user_agent(os.environ.get("CONTACT_EMAIL"))
 
 

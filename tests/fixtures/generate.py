@@ -2,8 +2,8 @@
 
 python tests/fixtures/generate.py
 
-a made up twelve country world, ten of them score so every voter leaves one
-pair on zero, 2015 is combined and 2016 is split
+a made up twelve country world where ten of them score so every voter leaves
+one pair on zero. 2015 is combined and 2016 is split
 """
 
 from __future__ import annotations

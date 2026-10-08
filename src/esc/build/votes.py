@@ -1,6 +1,6 @@
 """interim votes -> processed votes
 
-stays directed, never collapsed into unordered pairs
+stays directed and is never collapsed into unordered pairs
 """
 
 from __future__ import annotations

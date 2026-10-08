@@ -29,7 +29,7 @@ def test_user_agent_refuses_a_missing_contact_address(value):
 
 
 def test_import_fails_without_contact_email(monkeypatch):
-    # patch dotenv itself, the reload re-imports load_dotenv and a local .env
+    # patch dotenv itself because the reload re-imports load_dotenv and a local .env
     # would put the value straight back
     monkeypatch.setattr("dotenv.load_dotenv", lambda *a, **kw: False)
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)

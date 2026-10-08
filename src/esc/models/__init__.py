@@ -1,10 +1,9 @@
 """estimation and evaluation
 
-two modes, and the difference matters. the explanatory model may use the
-receiver effect, which is what every other country gave the same entry, and is
-how the song side is held constant. a forecasting model may not, because on the
-morning of the final nobody knows it yet. running both and reporting the gap is
-the honest version
+two modes with different rules. the explanatory model may use the receiver
+effect (what every other country gave the same entry) and that is how the song
+side is held constant. a forecasting model may not, because on the morning of
+the final nobody knows it yet. we run both and report the gap
 """
 
 from __future__ import annotations
@@ -55,7 +54,7 @@ def feature_sets(panel: pd.DataFrame) -> dict[str, list[str]]:
 
 
 def explanatory(sets: dict[str, list[str]]) -> set[str]:
-    """sets that use the receiver effect explain a result, they cannot forecast it"""
+    """sets that use the receiver effect explain a result but cannot forecast it"""
     return {name for name, columns in sets.items() if set(RECEIVER) & set(columns)}
 
 

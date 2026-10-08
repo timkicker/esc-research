@@ -1,6 +1,6 @@
 """metrics for a predicted ranking and for a predicted win probability
 
-ranking quality is scored per contest and then averaged, never pooled across
+ranking quality is scored per contest and then averaged without pooling across
 years, because a contest is the unit people care about
 """
 
@@ -35,7 +35,7 @@ def ranking_metrics(entries: pd.DataFrame, truth: str, predicted: str) -> pd.Dat
 
 
 def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dict:
-    """what chance looks like, with an interval, so a rank error can be placed"""
+    """what chance looks like (with an interval) so a rank error can be placed"""
     generator = rng()
     errors = []
     for (_year, _vote_type), group in entries.groupby(["year", "vote_type"]):
@@ -58,7 +58,7 @@ def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dic
 def win_probabilities(
     pairs: pd.DataFrame, predicted: str, residuals: np.ndarray, draws: int = 2000
 ) -> pd.DataFrame:
-    """simulate each contest, count how often an entry comes first
+    """simulate each contest and count how often an entry comes first
 
     resamples the model's own residuals onto the pair predictions
     """
@@ -101,7 +101,7 @@ CALIBRATION_BINS = (0.0, 0.01, 0.05, 0.10, 0.25, 0.50, 1.0)
 def calibration_curve(entries: pd.DataFrame, won: str, probability: str):
     """predicted probability against observed frequency
 
-    fixed bins, not quantiles, almost every entry sits near zero
+    fixed bins instead of quantiles because almost every entry sits near zero
     """
     frame = entries[[probability, won]].copy()
     frame["bucket"] = pd.cut(

@@ -117,7 +117,7 @@ def main() -> None:
 
     summary = pd.DataFrame(rows)
     io.write_parquet(summary, "model_summary", "processed")
-    # the receiver effect explains a result, it does not forecast one
+    # the receiver effect explains a result but does not forecast one
     forecasting = {k: v for k, v in kept.items() if k[1] not in explain_only}
     scored = summary.set_index(["vote_type", "features", "model"])
     best = max(forecasting, key=lambda k: scored.loc[k, "spearman"])

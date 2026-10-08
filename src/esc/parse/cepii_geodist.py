@@ -1,8 +1,8 @@
 """cepii dist_cepii -> interim dyad_static
 
-the zip holds one xls from 2004 and its codes show their age, see RENAME and
-PROXY below. filtered down to contest countries, 50176 world pairs only slow
-every later join
+the zip holds one xls from 2004 and its codes show their age (see RENAME and
+PROXY below). filtered down to contest countries because 50176 world pairs
+only slow every later join
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ KEEP = ("iso_o", "iso_d", "dist", "distw", *DUMMIES)
 
 # romania is still the pre-2002 code here
 RENAME = {"ROM": "ROU"}
-# in 2004 yugoslavia was serbia and montenegro, all three reference belgrade
+# in 2004 yugoslavia was serbia and montenegro so all three reference belgrade
 PROXY = {"SCG": "YUG", "SRB": "YUG"}
 
 

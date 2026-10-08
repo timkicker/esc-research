@@ -26,8 +26,8 @@ ENTRY_KEYS = [*SHOW_KEYS, "to_iso3"]
 def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
     """mean points this ordered pair exchanged in earlier contests
 
-    the whole vote history, not just the panel years, and strictly earlier years
-    so it cannot leak the year it predicts
+    uses the whole vote history including the years before the panel. only
+    strictly earlier years count so it cannot leak the year it predicts
     """
     history = io.read_parquet("votes", "processed")
     history = history[history["round"] == "final"]
@@ -58,7 +58,7 @@ def build() -> Path:
     n_in = len(panel)
     points = panel["points"].astype("float64")
 
-    # share of the pool, the only way years and vote types compare
+    # share of the pool because that is the only way years and vote types compare
     pool = points.groupby([panel[k] for k in SHOW_KEYS]).transform("sum")
     panel["points_share"] = np.where(pool > 0, points / pool, np.nan)
 
@@ -66,7 +66,7 @@ def build() -> Path:
     received = grouped.transform("sum")
     voters = grouped.transform("size")
 
-    # leave one out, what the rest of the field gave this entry
+    # leave one out (what the rest of the field gave this entry)
     others = voters - 1
     panel["points_received_total"] = received
     leave_one_out = (received - points) / others

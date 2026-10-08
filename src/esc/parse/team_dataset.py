@@ -1,7 +1,7 @@
 """teammate repo -> interim lyric_features, song_language and trends
 
-lyrics: country and year come from the record, not the key. unknown labels
-raise, a typo in the llm output should not become a new category
+lyrics: country and year come from the record and not from the key. unknown
+labels raise because a typo in the llm output should not become a new category
 trends: target_iso is the voting country, song_country the entry
 """
 
@@ -134,7 +134,7 @@ def parse_trends() -> Path:
             "entry_id": entry_id(year, entry_iso3.astype("string")).values,
             "web_interest": web,
             "youtube_interest": youtube,
-            # nothing measurable from either source, below the trends threshold
+            # below the trends threshold so neither source measured anything
             "censored": ((web == 0) & (youtube == 0)).astype("boolean"),
         }
     )

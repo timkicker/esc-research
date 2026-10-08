@@ -1,8 +1,9 @@
 """eurovisionworld results for the years after the spijkervet release
 
-the only fetch module that drives a browser, the scoreboard is rendered by
-javascript and the jury/televote switch hangs on a button. the rendered page
-lands in data/raw, one file per year and view, and parse works offline from there
+the only fetch module that drives a browser, because the scoreboard is rendered
+by javascript and the jury/televote switch hangs on a button. the rendered page
+lands in data/raw (one file per year and view) and parse works offline from
+there
 """
 
 from __future__ import annotations

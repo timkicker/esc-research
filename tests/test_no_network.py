@@ -8,7 +8,7 @@ from esc import config
 
 BANNED = {"requests", "requests_cache", "urllib", "urllib3", "http", "socket"}
 
-# io.py holds the cached client that fetch/ uses, that is the one exception
+# io.py holds the cached client that fetch/ uses and is the one exception
 ALLOWED = {"esc/io.py"}
 
 

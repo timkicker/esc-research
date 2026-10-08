@@ -29,7 +29,7 @@ BUILD = ["entries", "votes", "dyads", "features"]
 
 
 def _run(package: str, modules: list[str], func: str) -> list[str]:
-    """run every stage module, remember the ones that are still stubs"""
+    """run every stage module and remember the ones that are still stubs"""
     skipped = []
     for name in modules:
         module = importlib.import_module(f"esc.{package}.{name}")
@@ -57,7 +57,7 @@ def parse() -> None:
 
 
 def build() -> None:
-    # no stubs here, a build that cannot read its inputs must fail
+    # no stubs here because a build that cannot read its inputs must fail
     for name in BUILD:
         try:
             importlib.import_module(f"esc.build.{name}").build()

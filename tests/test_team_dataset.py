@@ -126,5 +126,5 @@ def test_one_hot_gives_the_same_columns_whatever_themes_occur():
     a, b = design(early, ["theme"]), design(late, ["theme"])
     assert list(a.columns) == list(b.columns)
     assert len(a.columns) == len(team_dataset.THEMES)
-    # a missing label stays missing, it is imputed later on the training years
+    # a missing label stays missing and is imputed later on the training years
     assert b.iloc[1].isna().all()

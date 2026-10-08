@@ -1,6 +1,6 @@
 """interim entry tables -> processed entries
 
-mirovision up to the year its dataset ends, recent_entries.csv after that, and
+mirovision up to the year its dataset ends and recent_entries.csv after that.
 where both cover a year the manual row wins since it was typed from the
 official results on purpose
 """
@@ -24,7 +24,7 @@ def _optional(name: str) -> pd.DataFrame | None:
 def _fill_from(frame: pd.DataFrame, name: str, columns: dict[str, str]) -> None:
     """fill columns from an optional interim table
 
-    mapped by entry_id rather than merged, no _x and _y suffixes
+    mapped by entry_id rather than merged (no _x and _y suffixes)
     """
     path = io.parquet_path(name, "interim")
     if not path.exists():

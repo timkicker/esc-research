@@ -1,8 +1,8 @@
 """the directed dyad panel, (year, round, vote_type, from_iso3, to_iso3)
 
 finals from 2016 only. semi-finals have a different voter set and no jury from
-2023, and before 2016 the split was never reported. the semi-final result still
-enters, as a column on the entry rather than its own row
+2023, while before 2016 the split was never reported. the semi-final result
+still enters as a column on the entry rather than its own row
 """
 
 from __future__ import annotations

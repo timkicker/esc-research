@@ -1,16 +1,17 @@
 """raw bytes -> typed interim tables
 
 the schema is fixed here instead of per source so two sources cannot disagree
-about dtypes, it is the one from README.md as pandas dtypes
+about dtypes. it is the one from README.md as pandas dtypes
 
-entry_id is year-iso3, one entry per country per contest so that is a real key
+entry_id is year-iso3 and since there is one entry per country per contest
+that is a real key
 """
 
 from __future__ import annotations
 
 import pandas as pd
 
-# nullable dtypes throughout, a missing running order is not a zero one
+# nullable dtypes throughout because a missing running order is not a zero one
 SCHEMA: dict[str, dict[str, str]] = {
     "entries": {
         "entry_id": "string",
@@ -74,7 +75,7 @@ SCHEMA: dict[str, dict[str, str]] = {
         "entry_id": "string",
         "language": "string",
     },
-    # one row per voting country and entry, the whole point of using trends
+    # one row per voting country and entry since that is the whole point of using trends
     "trends": {
         "year": "int16",
         "from_iso3": "string",
@@ -103,7 +104,7 @@ def entry_id(year, country_iso3) -> pd.Series:
 
 
 def enforce(df: pd.DataFrame, table: str) -> pd.DataFrame:
-    """cast to the interim schema, a missing or unexpected column is an error"""
+    """cast to the interim schema and fail on a missing or unexpected column"""
     try:
         dtypes = SCHEMA[table]
     except KeyError:

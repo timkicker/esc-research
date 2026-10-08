@@ -70,7 +70,7 @@ def test_win_probabilities_sum_to_one_per_contest():
 
 
 def test_calibration_uses_fixed_bins_not_quantiles():
-    # almost every entry sits near zero, quantile bins would collapse to one
+    # almost every entry sits near zero so quantile bins would collapse to one
     frame = pd.DataFrame(
         {
             "won": [False] * 18 + [True, True],
@@ -83,7 +83,7 @@ def test_calibration_uses_fixed_bins_not_quantiles():
 
 
 def test_every_set_with_the_receiver_effect_counts_as_explanatory():
-    # "all" does not say receiver in its name, it was once picked as a forecast
+    # "all" does not say receiver in its name and once got picked as a forecast
     panel = pd.DataFrame(
         columns=[*models.PAIR, *models.RECEIVER, "web_interest", "youtube_interest"]
     )

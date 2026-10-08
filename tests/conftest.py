@@ -1,4 +1,4 @@
-"""shared test setup, nothing here touches the network"""
+"""shared test setup that never touches the network"""
 
 from __future__ import annotations
 

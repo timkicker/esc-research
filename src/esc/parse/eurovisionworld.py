@@ -1,6 +1,6 @@
 """rendered eurovisionworld scoreboards -> interim votes_recent and entries_recent
 
-the scoreboard is a matrix, header cells carry data-from and rows carry
+the scoreboard is a matrix where header cells carry data-from and rows carry
 id="tr_<iso2>". output matches the spijkervet tables so build can concatenate
 """
 
@@ -60,7 +60,7 @@ def _lookup() -> dict[str, str]:
 
 
 def _results(path: Path) -> list[dict]:
-    """the finalist table next to the scoreboard, artist, song and running order"""
+    """the finalist table next to the scoreboard with artist, song and running order"""
     soup = BeautifulSoup(path.read_text(encoding="utf-8"), "html.parser")
     table = soup.find("table", class_="v_table_main")
     if table is None:

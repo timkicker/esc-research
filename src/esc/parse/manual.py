@@ -3,8 +3,7 @@
 the only inputs we own, so unlike the other parse modules this one can be
 written without looking at a download first
 
-pandas applies comment="#" anywhere on a line, not only at the start, so no #
-inside a field
+pandas applies comment="#" anywhere on a line so a field must never contain #
 """
 
 from __future__ import annotations
@@ -74,7 +73,7 @@ def parse_contest_dates() -> Path:
 
 
 def parse_recent_entries() -> Path:
-    """entries for the years after the upstream release, typed in by hand"""
+    """entries typed in by hand for the years after the upstream release"""
     df = _read("recent_entries")
     placeholders = int((df["country_iso3"] == PLACEHOLDER_ISO3).sum())
     df = df[df["country_iso3"] != PLACEHOLDER_ISO3].copy()

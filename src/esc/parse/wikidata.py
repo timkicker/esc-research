@@ -1,7 +1,7 @@
 """sparql results -> interim artists
 
-not written yet, no query so no result shape. target is the artists table,
-entry_id with artist_age and artist_sex
+not written yet and without a query there is no result shape. target is the
+artists table with entry_id, artist_age and artist_sex
 """
 
 from __future__ import annotations

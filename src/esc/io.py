@@ -22,12 +22,12 @@ class _TimeoutCachedSession(requests_cache.CachedSession):
 
 
 def get_session() -> requests_cache.CachedSession:
-    """cached session, only fetch/ may call this"""
+    """cached session that only fetch/ may call"""
     config.CACHE.mkdir(parents=True, exist_ok=True)
     session = _TimeoutCachedSession(
         cache_name=str(config.CACHE / "http"),
         backend="sqlite",
-        allowable_codes=(200,),  # an error is not an answer
+        allowable_codes=(200,),  # never cache an error response
         stale_if_error=False,
     )
     session.headers["User-Agent"] = config.USER_AGENT
