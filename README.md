@@ -27,7 +27,7 @@ make test
 make lint
 ```
 
-Each target also runs on its own. `make clean-interim` and `make clean-all` delete the generated data if you want to start over. For one source `make data` needs a headless Chrome (more on that under Sources).
+Each target also runs on its own. `make clean-interim` and `make clean-all` delete the generated data if you want to start over. For one source `make data` needs Chrome or Chromium (more on that under Sources). The driver for it is downloaded automatically and if the browser is installed somewhere unusual you can put its path into `ESC_CHROME`.
 
 The finished tables are parquet files in `data/processed/` and `features.parquet` is the full one. If you want a csv, `pandas.read_parquet` and `to_csv` is enough.
 

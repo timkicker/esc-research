@@ -8,6 +8,8 @@ there
 
 from __future__ import annotations
 
+import os
+import shutil
 import time
 from pathlib import Path
 
@@ -18,10 +20,27 @@ SOURCE_ID = "eurovisionworld"
 YEARS = (2024, 2025, 2026)
 VIEWS = ("jury", "tele")
 PAGE = "https://eurovisionworld.com/eurovision/{year}"
-CHROMEDRIVER = Path.home() / ".local/bin/chromedriver"
+# chrome or chromium, whichever is installed. ESC_CHROME overrides it
+BROWSERS = (
+    "google-chrome",
+    "google-chrome-stable",
+    "chromium",
+    "chromium-browser",
+    "chrome",
+)
 SETTLE = 6
 AFTER_CLICK = 3
 BETWEEN_PAGES = 4
+
+
+def _browser() -> str | None:
+    if os.environ.get("ESC_CHROME"):
+        return os.environ["ESC_CHROME"]
+    for name in BROWSERS:
+        if found := shutil.which(name):
+            return found
+    # not on PATH, on windows and mac selenium finds chrome by itself
+    return None
 
 
 def _driver():
@@ -32,7 +51,18 @@ def _driver():
     options.add_argument("--headless=new")
     options.add_argument("--window-size=1600,2400")
     options.add_argument(f"--user-agent={config.USER_AGENT}")
-    return webdriver.Chrome(service=Service(str(CHROMEDRIVER)), options=options)
+    if browser := _browser():
+        options.binary_location = browser
+    # a chromedriver on PATH wins, otherwise selenium downloads the matching one
+    service = Service(shutil.which("chromedriver"))
+    try:
+        return webdriver.Chrome(service=service, options=options)
+    except Exception as e:
+        first = (str(e).strip().splitlines() or [""])[0]
+        raise SystemExit(
+            f"[{SOURCE_ID}] could not start chrome or chromium: {first}\n"
+            "install one of them or point ESC_CHROME at the binary"
+        ) from e
 
 
 def _render(driver, year: int, view: str) -> str | None:
