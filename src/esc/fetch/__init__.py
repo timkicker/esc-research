@@ -1,13 +1,13 @@
 """network lives here and nowhere else
 
 every module exposes fetch() -> list[Path], writes into data/raw/<source_id>/
-and records provenance back into sources.yml
+and records what it got in data/raw/provenance.yml. sources.yml is only read
+here, a download must not leave a diff in git
 """
 
 from __future__ import annotations
 
 import hashlib
-import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -19,7 +19,7 @@ CHUNK = 1 << 20
 
 
 def load_sources() -> dict:
-    with config.SOURCES_YML.open() as fh:
+    with config.SOURCES_YML.open(encoding="utf-8") as fh:
         return yaml.safe_load(fh)
 
 
@@ -41,54 +41,32 @@ def checksum_file(path: Path) -> str:
 
 
 def record_provenance(source_id: str, paths: list[Path]) -> None:
-    """patch retrieved_at and sha256 in place
+    """write date and checksums to data/raw/provenance.yml
 
-    a yaml round trip would drop every comment and note in the file
+    for downloads the checksums in sources.yml are the files our results are
+    based on, a different file upstream gets a warning
     """
     stamp = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     checksums = {p.name: checksum_file(p) for p in sorted(paths)}
 
-    lines = config.SOURCES_YML.read_text().splitlines(keepends=True)
-    start = _entry_start(lines, source_id)
-    first, last = _provenance_span(lines, start, source_id)
+    source = get_source(source_id)
+    if source["kind"] == "download":
+        expected = source.get("sha256") or {}
+        for name, digest in checksums.items():
+            if expected.get(name) not in (None, digest):
+                print(
+                    f"[{source_id}] WARNING {name} differs from the checksum in "
+                    "sources.yml, upstream changed and results may differ"
+                )
 
-    block = [f"    retrieved_at: '{stamp}'\n"]
-    if checksums:
-        block.append("    sha256:\n")
-        block += [f"      {name}: {digest}\n" for name, digest in checksums.items()]
-    else:
-        block.append("    sha256: null\n")
-
-    config.SOURCES_YML.write_text("".join(lines[:first] + block + lines[last:]))
+    log = config.PROVENANCE
+    entries = {}
+    if log.exists():
+        entries = yaml.safe_load(log.read_text(encoding="utf-8")) or {}
+    entries[source_id] = {"retrieved_at": stamp, "sha256": checksums or None}
+    log.parent.mkdir(parents=True, exist_ok=True)
+    log.write_text(yaml.safe_dump(entries, sort_keys=True), encoding="utf-8")
     print(f"[{source_id}] provenance recorded for {len(checksums)} file(s)")
-
-
-def _entry_start(lines: list[str], source_id: str) -> int:
-    pattern = re.compile(rf"^  - id:\s*{re.escape(source_id)}\s*$")
-    for i, line in enumerate(lines):
-        if pattern.match(line.rstrip("\n")):
-            return i
-    raise KeyError(f"no entry for {source_id!r} in {config.SOURCES_YML}")
-
-
-def _provenance_span(lines: list[str], start: int, source_id: str) -> tuple[int, int]:
-    first = last = None
-    for i in range(start + 1, len(lines)):
-        if lines[i].startswith("  - id:") or (
-            lines[i].strip() and not lines[i].startswith(" ")
-        ):
-            break
-        if lines[i].startswith("    retrieved_at:"):
-            first = i
-        elif lines[i].startswith("    notes:"):
-            last = i
-            break
-    if first is None or last is None:
-        raise ValueError(
-            f"entry {source_id!r} needs retrieved_at and sha256 right before "
-            "notes, that is the block we rewrite"
-        )
-    return first, last
 
 
 def download(session, url: str, dest: Path, expected_sha256: str | None = None) -> Path:

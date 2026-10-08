@@ -2,9 +2,10 @@
 #
 # url          string for api and manual sources, filename -> url mapping for
 #              downloads so the keys line up with sha256
-# retrieved_at written by fetch.record_provenance
-# sha256       filename -> digest, written by the same helper, null means not
-#              fetched yet and not "no checksum needed"
+# retrieved_at when we took the snapshot our results are based on
+# sha256       filename -> digest of that snapshot, null means not fetched yet.
+#              a download compares against it and warns, the date and checksum
+#              of each run go to data/raw/provenance.yml and never in here
 #
 # download urls are pinned to a release tag or a commit sha, a url pointing at
 # a moving branch is not provenance

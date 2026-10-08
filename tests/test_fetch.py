@@ -40,41 +40,48 @@ def test_checksum_file(tmp_path):
     assert digest == fetch.checksum_file(path)
 
 
-def test_record_provenance_keeps_comments_and_notes(tmp_path, monkeypatch):
+def _setup(tmp_path, monkeypatch):
     manifest = tmp_path / "sources.yml"
     manifest.write_text(SAMPLE)
     monkeypatch.setattr(config, "SOURCES_YML", manifest)
-
+    monkeypatch.setattr(config, "PROVENANCE", tmp_path / "raw" / "provenance.yml")
     payload = tmp_path / "a.csv"
     payload.write_bytes(b"hello")
+    return manifest, payload
+
+
+def test_record_provenance_leaves_sources_yml_alone(tmp_path, monkeypatch):
+    # a download that changes a tracked file breaks git pull for everyone else
+    manifest, payload = _setup(tmp_path, monkeypatch)
     fetch.record_provenance("alpha", [payload])
+    assert manifest.read_text() == SAMPLE
 
-    text = manifest.read_text()
-    assert text.startswith("# a comment that must survive")
-    assert "keep me too" in text
-
-    parsed = yaml.safe_load(text)
-    alpha, beta = parsed["sources"]
-    assert alpha["sha256"] == {"a.csv": fetch.checksum_file(payload)}
-    assert alpha["retrieved_at"].endswith("Z")
-    assert alpha["notes"].strip() == "keep me"
-    assert beta["retrieved_at"] is None
+    log = yaml.safe_load(config.PROVENANCE.read_text())
+    assert log["alpha"]["sha256"] == {"a.csv": fetch.checksum_file(payload)}
+    assert log["alpha"]["retrieved_at"].endswith("Z")
 
 
-def test_record_provenance_is_idempotent(tmp_path, monkeypatch):
-    manifest = tmp_path / "sources.yml"
-    manifest.write_text(SAMPLE)
-    monkeypatch.setattr(config, "SOURCES_YML", manifest)
-    payload = tmp_path / "a.csv"
-    payload.write_bytes(b"hello")
-
+def test_record_provenance_keeps_other_sources(tmp_path, monkeypatch):
+    _, payload = _setup(tmp_path, monkeypatch)
     fetch.record_provenance("alpha", [payload])
-    once = manifest.read_text()
+    fetch.record_provenance("beta", [])
     fetch.record_provenance("alpha", [payload])
-    twice = manifest.read_text()
-    # only the timestamp may differ
-    assert once.count("sha256:") == twice.count("sha256:")
-    assert len(once.splitlines()) == len(twice.splitlines())
+    log = yaml.safe_load(config.PROVENANCE.read_text())
+    assert set(log) == {"alpha", "beta"}
+    assert log["beta"]["sha256"] is None
+
+
+def test_record_provenance_warns_when_upstream_changed(tmp_path, monkeypatch, capsys):
+    manifest, payload = _setup(tmp_path, monkeypatch)
+    manifest.write_text(
+        SAMPLE.replace(
+            "    sha256: null\n    notes: >-",
+            "    sha256:\n      a.csv: 00\n    notes: >-",
+            1,
+        )
+    )
+    fetch.record_provenance("alpha", [payload])
+    assert "differs from the checksum" in capsys.readouterr().out
 
 
 def test_get_source_lists_the_known_ids(tmp_path, monkeypatch):
