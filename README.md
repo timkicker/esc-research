@@ -13,7 +13,7 @@ make install
 cp .env.example .env
 ```
 
-Put your email into `CONTACT_EMAIL` in `.env`. The code won't import without it because Wikidata blocks requests that don't say who is asking.
+Put your email into `CONTACT_EMAIL` in `.env`. Only `make data` needs it because it goes into every request and some sites block requests that don't say who is asking. The other targets run without it.
 
 ## Usage
 
@@ -49,7 +49,7 @@ data/raw|interim|processed
 data/manual/          csvs we maintain by hand
 ```
 
-Only `data/manual/` is in git. `sources.yml` is in git too and every download writes the date and a checksum back into it, so it shows up in the diff after a run.
+Only `data/manual/` is in git. `sources.yml` is in git too but a run never changes it. Every download writes its date and checksums to `data/raw/provenance.yml` and warns if a file is not the one we used for our results.
 
 ## Sources
 

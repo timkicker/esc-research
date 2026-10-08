@@ -30,7 +30,7 @@ def get_session() -> requests_cache.CachedSession:
         allowable_codes=(200,),  # never cache an error response
         stale_if_error=False,
     )
-    session.headers["User-Agent"] = config.USER_AGENT
+    session.headers["User-Agent"] = config.user_agent()
 
     retry = Retry(
         total=config.HTTP_RETRIES,

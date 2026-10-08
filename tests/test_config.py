@@ -28,15 +28,14 @@ def test_user_agent_refuses_a_missing_contact_address(value):
     assert ".env.example" in str(excinfo.value)
 
 
-def test_import_fails_without_contact_email(monkeypatch):
-    # patch dotenv itself because the reload re-imports load_dotenv and a local .env
-    # would put the value straight back
+def test_import_works_without_contact_email(monkeypatch):
+    # parse, build and model never go online and must run without a .env
     monkeypatch.setattr("dotenv.load_dotenv", lambda *a, **kw: False)
     monkeypatch.delenv("CONTACT_EMAIL", raising=False)
     try:
-        # the reload redefines the class so match the base and the message
+        importlib.reload(config)
         with pytest.raises(RuntimeError, match="CONTACT_EMAIL is not set"):
-            importlib.reload(config)
+            config.user_agent()
     finally:
         os.environ["CONTACT_EMAIL"] = "pytest@example.org"
         importlib.reload(config)

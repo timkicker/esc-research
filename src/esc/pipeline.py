@@ -49,6 +49,13 @@ def _report(stage: str, skipped: list[str]) -> None:
 
 
 def data() -> None:
+    from esc import config
+
+    # check before the first download and not halfway through
+    try:
+        config.user_agent()
+    except config.MissingContactEmail as exc:
+        raise SystemExit(f"[data] {exc}") from None
     _report("data", _run("fetch", FETCH, "fetch"))
 
 

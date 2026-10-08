@@ -19,6 +19,7 @@ MANUAL = DATA / "manual"
 CACHE = ROOT / "cache"
 
 SOURCES_YML = ROOT / "sources.yml"
+PROVENANCE = RAW / "provenance.yml"
 
 LAYERS: dict[str, Path] = {
     "raw": RAW,
@@ -50,8 +51,9 @@ def build_user_agent(email: str | None) -> str:
     return f"{PROJECT}/{VERSION} (mailto:{email})"
 
 
-# fails at import on purpose because that beats failing halfway through a download
-USER_AGENT = build_user_agent(os.environ.get("CONTACT_EMAIL"))
+def user_agent() -> str:
+    """only the download stage needs it, parse, build and model run without"""
+    return build_user_agent(os.environ.get("CONTACT_EMAIL"))
 
 
 def layer_dir(layer: str) -> Path:

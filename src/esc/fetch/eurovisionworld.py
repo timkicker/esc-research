@@ -50,7 +50,7 @@ def _driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless=new")
     options.add_argument("--window-size=1600,2400")
-    options.add_argument(f"--user-agent={config.USER_AGENT}")
+    options.add_argument(f"--user-agent={config.user_agent()}")
     if browser := _browser():
         options.binary_location = browser
     # a chromedriver on PATH wins, otherwise selenium downloads the matching one
