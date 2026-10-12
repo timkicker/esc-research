@@ -35,25 +35,23 @@ sources:
 
   - id: eurovisionworld
     name: eurovisionworld.com results, 2024 onwards
-    url: https://eurovisionworld.com/eurovision/{year}
+    url: https://eurovisionworld.com/scripts/js/voting/{event}.js
     kind: api
     license: >-
       no stated reuse licence. robots.txt disallows only /bonus/ and /cdn-cgi/,
       the results pages are allowed
     citation: eurovisionworld.com, results pages per contest year
-    retrieved_at: '2026-10-01T10:08:06Z'
+    retrieved_at: '2026-10-12T11:07:10Z'
     sha256:
-      2024-jury.html: fcda095efa475b0e8ec5fafd28624d329ca72475a40ce767eac4f31045f29c53
-      2024-tele.html: 95917767987fffb3cca3e27edd78f7b3c47833307678f2dc5258f29502692670
-      2025-jury.html: 8a18491c765493e774ae13f862a404fd0a17f535b6d07bfc24f49603c6c96a39
-      2025-tele.html: 874d9760f6a97e89da468ced3950cc5b5b55d78195e135409ad1aa41fbb33505
-      2026-jury.html: 3c830cb684a7ba57fb336e62066e761b1f0b1635b4db4483c8bde37bcd9a4ad5
-      2026-tele.html: de50b6078beb8c9b15cd7cf17c176520408217604a270d8c7ec91830f5d84432
+      2024.js: 732ffc116e8bf168f3b87f941e034c4cecd6a5a4ab586480e8837796ba07788d
+      2025.js: 25669c08542eb58d0db49c50e84e9e2da52523739a54243d12f54a9b44db117a
+      2026.js: f2b93b528fcfb207204fdab310996c786b366951961bf9b1c1f590f00803e31b
     notes: >-
-      fills the gap the spijkervet release leaves after 2023. the scoreboard is
-      built by javascript and the jury/televote switch hangs on a data-button,
-      so this needs a real browser and not requests. throttle, keep the rendered
-      html on disk, never fetch twice
+      fills the gap the spijkervet release leaves after 2023. the year page
+      eurovisionworld.com/eurovision/{year} loads a voting script (160 for
+      2024, 170 for 2025, 180 for 2026) that holds songs, the final table and
+      every jury and televote point as json. we keep that script, no browser.
+      throttle, never fetch twice
 
   - id: cepii_geodist
     name: CEPII GeoDist, dyadic file

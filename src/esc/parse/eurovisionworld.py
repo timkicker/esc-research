@@ -1,55 +1,48 @@
-"""rendered eurovisionworld scoreboards -> interim votes_recent and entries_recent
+"""eurovisionworld voting scripts -> interim votes_recent and entries_recent
 
-the scoreboard is a matrix where header cells carry data-from and rows carry
-id="tr_<iso2>". output matches the spijkervet tables so build can concatenate
+each data/raw/eurovisionworld/<year>.js assigns json to a few variables.
+voting_songs maps iso2 to artist and song, voting_table_main holds the finalists
+as [running order, place, total, televote, jury, ...] and voting_point every
+award as [from, to, _, jury points, televote points]. output matches the
+spijkervet tables so build can concatenate
 """
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
 import pandas as pd
-from bs4 import BeautifulSoup
 
 from esc import config, io
 from esc.parse import enforce, entry_id
 
 RAW_ID = "eurovisionworld"
-VOTE_TYPE = {"jury": "jury", "tele": "televote"}
-# rank, flag, name and total sit in front of the first point column
-LEAD_CELLS = 3
-FILENAME = re.compile(r"^(\d{4})-(jury|tele)\.html$")
+FILENAME = re.compile(r"^(\d{4})\.js$")
+VARIABLE = re.compile(r"^(\w+) = (.*?);\s*$", re.MULTILINE)
+NEEDED = ("voting_songs", "voting_table_main", "voting_point")
 
 
-def _scoreboard(path: Path) -> list[tuple[str, str, int]]:
-    soup = BeautifulSoup(path.read_text(encoding="utf-8"), "html.parser")
-    table = soup.find("table", class_="scoreboard_table")
-    if table is None:
-        raise ValueError(f"{path.name} has no scoreboard table, the layout changed")
+def _load(path: Path) -> dict:
+    found = {
+        name: json.loads(value)
+        for name, value in VARIABLE.findall(path.read_text(encoding="utf-8"))
+    }
+    missing = [name for name in NEEDED if name not in found]
+    if missing:
+        raise ValueError(f"{path.name} lacks {missing}, the script format changed")
+    return found
 
-    rows = table.find_all("tr")
-    voters = [
-        (i, cell["data-from"])
-        for i, cell in enumerate(rows[0].find_all(["th", "td"]))
-        if cell.has_attr("data-from")
-    ]
-    if not voters:
-        raise ValueError(f"{path.name} header has no data-from cells")
 
+def _years() -> list[tuple[int, dict]]:
+    source = config.RAW / RAW_ID
     out = []
-    for row in rows[1:]:
-        row_id = row.get("id", "")
-        if not row_id.startswith("tr_"):
-            continue
-        receiver = row_id.removeprefix("tr_")
-        cells = row.find_all(["th", "td"])
-        for index, voter in voters:
-            position = index + LEAD_CELLS
-            if position >= len(cells):
-                continue
-            text = cells[position].get_text(strip=True)
-            out.append((voter, receiver, int(text) if text.isdigit() else 0))
+    for path in sorted(source.glob("*.js")):
+        if match := FILENAME.match(path.name):
+            out.append((int(match.group(1)), _load(path)))
+    if not out:
+        raise FileNotFoundError(f"{source} has no voting scripts, run data first")
     return out
 
 
@@ -59,59 +52,29 @@ def _lookup() -> dict[str, str]:
     return dict(zip(codes["label"], codes["iso3"], strict=True))
 
 
-def _results(path: Path) -> list[dict]:
-    """the finalist table next to the scoreboard with artist, song and running order"""
-    soup = BeautifulSoup(path.read_text(encoding="utf-8"), "html.parser")
-    table = soup.find("table", class_="v_table_main")
-    if table is None:
-        raise ValueError(f"{path.name} has no results table, the layout changed")
-
-    out = []
-    for row in table.find_all("tr"):
-        row_id = row.get("id", "")
-        if not row_id.startswith("v_tr_"):
-            continue
-        cells = row.find_all(["th", "td"])
-        artist_tag = cells[2].find("span", class_="v_artist")
-        artist = artist_tag.get_text(strip=True) if artist_tag else ""
-        if artist_tag:
-            artist_tag.extract()
-        order = cells[6].get_text(strip=True) if len(cells) > 6 else ""
-        out.append(
-            {
-                "iso2": row_id.removeprefix("v_tr_"),
-                "place": cells[0].get_text(strip=True),
-                "song": cells[2].get_text(" ", strip=True),
-                "artist": artist,
-                "points_total": cells[3].get_text(strip=True),
-                "running_order": order,
-            }
-        )
-    return out
-
-
 def parse_entries() -> Path:
-    source = config.RAW / RAW_ID
     mapping = _lookup()
     records = []
-    # the jury page carries the same finalist table as the televote page
-    for path in sorted(source.glob("*-jury.html")):
-        match = FILENAME.match(path.name)
-        if not match:
-            continue
-        year = int(match.group(1))
-        for item in _results(path):
-            if item["iso2"] not in mapping:
-                continue
-            iso3 = mapping[item["iso2"]]
-            records.append({**item, "year": year, "country_iso3": iso3})
+    for year, data in _years():
+        for iso2, row in data["voting_table_main"].items():
+            artist, song, *_ = data["voting_songs"][iso2]
+            records.append(
+                {
+                    "year": year,
+                    "country_iso3": mapping[iso2],
+                    "running_order": row[0],
+                    "place": row[1],
+                    "points_total": row[2],
+                    "artist": artist,
+                    "song": song,
+                }
+            )
 
-    df = pd.DataFrame.from_records(records).drop(columns=["iso2"])
+    df = pd.DataFrame.from_records(records)
     df["year"] = df["year"].astype("int16")
     for column in ("place", "running_order"):
-        df[column] = pd.to_numeric(df[column], errors="coerce").astype("Int16")
-    totals = pd.to_numeric(df["points_total"], errors="coerce")
-    df["points_total"] = totals.astype("Int32")
+        df[column] = df[column].astype("Int16")
+    df["points_total"] = df["points_total"].astype("Int32")
     for column in ("artist", "song", "country_iso3"):
         df[column] = df[column].astype("string")
     df["round"] = pd.Series("final", index=df.index, dtype="string")
@@ -133,39 +96,40 @@ def parse_entries() -> Path:
 
 
 def parse_votes() -> Path:
-    source = config.RAW / RAW_ID
-    files = sorted(source.glob("*.html"))
-    if not files:
-        raise FileNotFoundError(f"{source} is empty, run `make data` first")
-
     mapping = _lookup()
     records, unmapped = [], set()
-    for path in files:
-        match = FILENAME.match(path.name)
-        if not match:
-            continue
-        year, view = int(match.group(1)), match.group(2)
-        for voter, receiver, points in _scoreboard(path):
-            if voter not in mapping or receiver not in mapping:
-                unmapped.update({voter, receiver} - set(mapping))
-                continue
-            records.append(
-                {
-                    "year": year,
-                    "round": "final",
-                    "from_iso3": mapping[voter],
-                    "to_iso3": mapping[receiver],
-                    "vote_type": VOTE_TYPE[view],
-                    "points": points,
-                }
-            )
+    for year, data in _years():
+        finalists = list(data["voting_table_main"])
+        given = {}
+        for voter, receiver, _, jury, tele in data["voting_point"]:
+            given[("jury", voter, receiver)] = jury
+            given[("televote", voter, receiver)] = tele
+        # every voter against every finalist, the awards only list who got points
+        for vote_type in ("jury", "televote"):
+            voters = {v for (t, v, _), p in given.items() if t == vote_type and p}
+            for voter in sorted(voters):
+                for receiver in finalists:
+                    if voter == receiver:
+                        continue
+                    if voter not in mapping or receiver not in mapping:
+                        unmapped.update({voter, receiver} - set(mapping))
+                        continue
+                    records.append(
+                        {
+                            "year": year,
+                            "round": "final",
+                            "from_iso3": mapping[voter],
+                            "to_iso3": mapping[receiver],
+                            "vote_type": vote_type,
+                            "points": given.get((vote_type, voter, receiver), 0),
+                        }
+                    )
 
     df = pd.DataFrame.from_records(records)
     df["year"] = df["year"].astype("int16")
     df["points"] = df["points"].astype("Int16")
     for column in ("round", "from_iso3", "to_iso3", "vote_type"):
         df[column] = df[column].astype("string")
-    df = df[df["from_iso3"] != df["to_iso3"]]
 
     out = enforce(df, "votes")
     years = sorted(out["year"].unique())

@@ -50,7 +50,7 @@ uv run esc clean      # delete data/interim
 uv run esc clean-all  # delete everything downloaded or built
 ```
 
-`uv run esc` without anything lists the commands. On Linux and Mac `make all`, `make data` and so on do the same. Each step also runs on its own. For one source the download needs Chrome or Chromium (more on that under Sources). The driver for it is downloaded automatically and if the browser is installed somewhere unusual you can put its path into `ESC_CHROME`.
+`uv run esc` without anything lists the commands. On Linux and Mac `make all`, `make data` and so on do the same. Each step also runs on its own and nothing needs a browser.
 
 The finished tables are parquet files in `data/processed/` and `features.parquet` is the full one. If you want a csv, `pandas.read_parquet` and `to_csv` is enough.
 
@@ -79,7 +79,7 @@ Only `data/manual/` is in git. `sources.yml` is in git too but a run never chang
 `sources.yml` has the urls, licenses and checksums.
 
 - Spijkervet, J. (2020). The Eurovision Song Contest Dataset v1.0. Zenodo. https://doi.org/10.5281/zenodo.4036457. Results, votes and lyrics up to 2023 (we use the 2023 release). There is no license file but the authors ask to be cited.
-- eurovisionworld.com for 2024 to 2026, where the dataset stops. The scoreboard there is built with javascript, which is why this one source needs a browser. robots.txt allows the results pages and each page is loaded once and then kept on disk.
+- eurovisionworld.com for 2024 to 2026, where the dataset stops. The results page loads all its points from a small script file with json in it, so we download that file directly and keep it on disk. robots.txt allows it.
 - Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0. Distance, shared border and shared language for every pair.
 - [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset) is the repo of our teammate (GPL-3.0). From there we take what an llm read out of the lyrics, the song language and Google Trends for every entry in every voting country. We only read its data files at a fixed commit and use none of its code.
 - Wikidata (CC0 1.0) for the age and sex of the artists. The module for it is not written yet.
