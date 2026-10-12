@@ -1,0 +1,150 @@
+\documentclass[aspectratio=43,11pt,t]{beamer}
+
+% ---------------------------------------------------------------------------
+% Minimal black-and-white style: no theme, no colour, no navigation.
+% A pitch for fans and delegations, so no model terms on any slide.
+% ---------------------------------------------------------------------------
+\usepackage{fontspec}
+\setsansfont{TeX Gyre Heros}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+
+\colorlet{muted}{black!55}
+\colorlet{faint}{black!25}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=black,bg=white}
+\setbeamercolor{structure}{fg=black}
+\setbeamercolor{frametitle}{fg=black}
+\setbeamercolor{title}{fg=black}
+\setbeamercolor{itemize item}{fg=muted}
+\setbeamertemplate{itemize item}{\small\textbullet}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamertemplate{frametitle}{\vspace*{1.1em}\insertframetitle\par\vspace*{0.2em}}
+\setbeamertemplate{footline}{%
+  \hfill{\color{muted}\scriptsize\insertframenumber}\hspace*{1.2em}\vspace*{0.9em}}
+\setbeamersize{text margin left=1.4em,text margin right=1.4em}
+
+\tikzset{
+  node/.style={draw,rounded corners=1.5pt,inner sep=4pt,font=\small},
+  lbl/.style={font=\scriptsize,muted},
+  arr/.style={-{Stealth[length=5pt]},thin},
+}
+
+\newcommand{\src}[1]{{\color{muted}\scriptsize #1}}
+
+\newcommand{\stat}[3]{%
+  \begin{minipage}[t]{0.42\textwidth}\centering
+    {\Large\bfseries #1\par}\vspace{0.7em}
+    {\scriptsize #2\par}\vspace{0.5em}
+    {\color{muted}\scriptsize #3\par}
+  \end{minipage}}
+
+\begin{document}
+
+% ---------------------------------------------------------------------------
+\begin{frame}[plain]
+  \vfill
+  {\Large\bfseries Song or neighbours?\par}
+  \vspace{1.6em}
+  {\small Anna-Ilona Nikolaeva, Yauheni Zviazdou, Tim Kicker\par}
+  \vspace{0.3em}
+  {\small\color{muted} Introduction to Data Science, workshop 2\\
+  University of Helsinki, October 2026\par}
+  \vfill
+\end{frame}
+
+% ---------------------------------------------------------------------------
+\begin{frame}{Greece to Cyprus}
+  \vfill
+  \begin{center}
+  \begin{tikzpicture}
+    % left: the pattern
+    \node[lbl] at (-2.9,1.35) {public vote, 8 of 8 finals since 2016};
+    \node[node] (g) at (-4.4,0.2) {Greece};
+    \node[node] (c) at (-1.5,0.2) {Cyprus};
+    \draw[arr] (g) -- node[above,lbl]{12 points} (c);
+    % divider
+    \draw[faint] (0,1.5) -- (0,-1.6);
+    % right: the question
+    \node[lbl] at (2.9,1.35) {why?};
+    \node[node] (s) at (1.5,0.2) {the song};
+    \node[node] (n) at (4.3,0.2) {the neighbours};
+    \node[font=\small] (p) at (2.9,-1.25) {12 points};
+    \draw[arr,muted] (s) -- (p);
+    \draw[arr,muted] (n) -- (p);
+  \end{tikzpicture}
+  \end{center}
+  \vfill
+  \src{Spijkervet, 2020; eurovisionworld.com}
+\end{frame}
+
+% ---------------------------------------------------------------------------
+\begin{frame}{Juries and public}
+  \vfill
+  \begin{center}
+  \stat{52 $\rightarrow$ 323}
+       {Israel 2024,\\juries vs.\ public}
+       {eurovisionworld.com}\hfill
+  \stat{214 $\rightarrow$ 0}
+       {Switzerland 2025,\\juries vs.\ public}
+       {eurovisionworld.com}
+  \end{center}
+  \vfill
+\end{frame}
+
+% ---------------------------------------------------------------------------
+\begin{frame}{Song or neighbours}
+  \vfill
+  \begin{center}
+  \stat{25\,\% $\rightarrow$ 40\,\%}
+       {the song,\\juries vs.\ public}
+       {this project}\hfill
+  \stat{3\,\% $\rightarrow$ 12\,\%}
+       {the neighbours,\\juries vs.\ public}
+       {this project}
+  \end{center}
+  \vfill
+  \begin{center}
+    \bfseries Neighbours count four times as much for the public
+  \end{center}
+  \vspace{1.5em}
+\end{frame}
+
+% ---------------------------------------------------------------------------
+\begin{frame}{Look up your country}
+  \vfill
+  \begin{center}
+    \includegraphics[height=0.68\textheight]{explorer.png}
+  \end{center}
+  \vfill
+  \src{tim.kicker.dev/projects/esc-research}
+\end{frame}
+
+% ---------------------------------------------------------------------------
+\begin{frame}{Who it is for}
+  \vfill
+  \begin{columns}[T,onlytextwidth]
+    \column{0.47\textwidth}
+      {\small\bfseries Fans\par}
+      \vspace{0.5em}
+      \begin{itemize}\footnotesize
+        \item Neighbour votes in numbers
+        \item Favourites of your own country
+      \end{itemize}
+    \column{0.47\textwidth}
+      {\small\bfseries Delegations\par}
+      \vspace{0.5em}
+      \begin{itemize}\footnotesize
+        \item Song and promotion: yours
+        \item Neighbours and diaspora: given
+      \end{itemize}
+  \end{columns}
+  \vfill
+  \begin{center}
+    \bfseries tim.kicker.dev/projects/esc-research
+  \end{center}
+  \vspace{1.5em}
+\end{frame}
+
+\end{document}
