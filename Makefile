@@ -1,41 +1,14 @@
+# shortcut for linux and mac, the real entry point is uv run esc
 .PHONY: install data parse build model all test lint clean-interim clean-all
 
 install:
-	@echo ">> installing dependencies"
 	uv sync --all-groups
 
-data:
-	@echo ">> fetching raw data into data/raw"
-	uv run python -m esc.pipeline data
-
-parse:
-	@echo ">> parsing raw data into data/interim"
-	uv run python -m esc.pipeline parse
-
-build:
-	@echo ">> building processed tables into data/processed"
-	uv run python -m esc.pipeline build
-
-model:
-	@echo ">> fitting models, leave-one-year-out"
-	uv run python -m esc.models.run
-
-all: data parse build
-	@echo ">> pipeline finished"
-
-test:
-	@echo ">> running tests"
-	uv run pytest -q
-
-lint:
-	@echo ">> linting"
-	uv run ruff check src tests
-	uv run ruff format --check src tests
+data parse build model all test lint:
+	uv run esc $@
 
 clean-interim:
-	@echo ">> removing data/interim"
-	rm -rf data/interim
+	uv run esc clean
 
 clean-all:
-	@echo ">> removing data/raw data/interim data/processed cache"
-	rm -rf data/raw data/interim data/processed cache
+	uv run esc clean-all

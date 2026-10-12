@@ -6,28 +6,41 @@ The rules for working on the code, the schema and the traps we already ran into 
 
 ## Setup
 
-You need Python 3.12 and [uv](https://docs.astral.sh/uv/).
+All you need is [uv](https://docs.astral.sh/uv/). It installs Python 3.12 and every package by itself on the first run.
+
+On Windows in PowerShell:
 
 ```
-make install
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+copy .env.example .env
+```
+
+On Linux or Mac:
+
+```
+curl -LsSf https://astral.sh/uv/install.sh | sh
 cp .env.example .env
 ```
 
-Put your email into `CONTACT_EMAIL` in `.env`. Only `make data` needs it because it goes into every request and some sites block requests that don't say who is asking. The other targets run without it.
+Then put your email into `CONTACT_EMAIL` in `.env`. Only the download needs it because it goes into every request and some sites block requests that don't say who is asking.
 
 ## Usage
 
+Everything runs through one command, on every system the same way:
+
 ```
-make data     # download and scrape -> data/raw
-make parse    # -> data/interim
-make build    # -> data/processed
-make model    # fit on all years but one and test on that one
-make all
-make test
-make lint
+uv run esc all        # download, build and fit, the whole thing
+uv run esc data       # download and scrape -> data/raw
+uv run esc parse      # -> data/interim
+uv run esc build      # -> data/processed
+uv run esc model      # fit on all years but one and test on that one
+uv run esc test
+uv run esc lint
+uv run esc clean      # delete data/interim
+uv run esc clean-all  # delete everything downloaded or built
 ```
 
-Each target also runs on its own. `make clean-interim` and `make clean-all` delete the generated data if you want to start over. For one source `make data` needs Chrome or Chromium (more on that under Sources). The driver for it is downloaded automatically and if the browser is installed somewhere unusual you can put its path into `ESC_CHROME`.
+`uv run esc` without anything lists the commands. On Linux and Mac `make all`, `make data` and so on do the same. Each step also runs on its own. For one source the download needs Chrome or Chromium (more on that under Sources). The driver for it is downloaded automatically and if the browser is installed somewhere unusual you can put its path into `ESC_CHROME`.
 
 The finished tables are parquet files in `data/processed/` and `features.parquet` is the full one. If you want a csv, `pandas.read_parquet` and `to_csv` is enough.
 
@@ -40,7 +53,7 @@ There is one row for every country that gives points to another country in a fin
 ```
 src/esc/config.py     paths, User-Agent
 src/esc/io.py         parquet helpers, cached http client
-src/esc/pipeline.py   runs the stages behind the make targets
+src/esc/cli.py        the esc command\nsrc/esc/pipeline.py   runs the stages
 src/esc/fetch/        one module per source, the only place with network access
 src/esc/parse/        raw -> typed interim tables
 src/esc/build/        joins and features -> processed

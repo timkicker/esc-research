@@ -21,6 +21,9 @@ dependencies = [
     "selenium>=4.20",
 ]
 
+[project.scripts]
+esc = "esc.cli:main"
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",
