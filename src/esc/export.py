@@ -117,6 +117,63 @@ def meta(features: pd.DataFrame, names: pd.DataFrame) -> dict:
     }
 
 
+SPLIT_LABELS = {
+    "entry_only": "the entry itself",
+    "pair_only": "the two countries",
+    "overlap": "both together",
+    "noise": "nothing we can explain",
+}
+
+
+def _records(payload: dict) -> list[dict]:
+    return [dict(zip(payload["columns"], r, strict=True)) for r in payload["rows"]]
+
+
+def latex_tables(payloads: dict, names: dict, named: int = 5, top: int = 8) -> dict:
+    """small tables that pgfplots reads for the slides and the report"""
+    split_rows = [
+        {
+            "y": i,
+            "label": SPLIT_LABELS[share],
+            "jury": round(payloads["split"]["split"]["jury"][share] * 100, 1),
+            "public": round(payloads["split"]["split"]["televote"][share] * 100, 1),
+        }
+        for i, share in enumerate(SHARES)
+    ]
+    entry_rows = _records(payloads["entries"])
+    scatter = pd.DataFrame(entry_rows)[["jury", "televote"]]
+    by_gap = sorted(entry_rows, key=lambda r: r["televote"] - r["jury"])
+    far = by_gap[: named - named // 2 - 1] + by_gap[-(named // 2 + 1) :]
+    outliers = pd.DataFrame(
+        {
+            "jury": [r["jury"] for r in far],
+            "televote": [r["televote"] for r in far],
+            "label": [f"{names[r['country']]} {r['year']}" for r in far],
+        }
+    )
+    public = [r for r in _records(payloads["affinity"]) if r["type"] == "t"][:top]
+    favourites = pd.DataFrame(
+        {
+            "y": range(len(public)),
+            "label": [f"{names[r['from']]} $\\to$ {names[r['to']]}" for r in public],
+            "excess": [r["excess"] for r in public],
+        }
+    )
+    return {
+        "split": pd.DataFrame(split_rows),
+        "scatter": scatter,
+        "scatter-named": outliers,
+        "favourites-public": favourites,
+    }
+
+
+def _write_latex(name: str, frame: pd.DataFrame) -> Path:
+    path = EXPORT / "latex" / f"{name}.csv"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    frame.to_csv(path, index=False, encoding="utf-8", lineterminator="\n")
+    return path
+
+
 def _write_json(name: str, payload: dict) -> Path:
     path = EXPORT / "site" / f"{name}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -139,12 +196,17 @@ def main() -> list[Path]:
     pairs = io.read_parquet("pair_affinity", "processed")
     names = io.read_parquet("country_names", "interim")
 
-    written = [
-        _write_json("meta", meta(features, names)),
-        _write_json("votes", votes(features)),
-        _write_json("entries", entries(features, table)),
-        _write_json("split", split(decomposition)),
-        _write_json("affinity", affinity(pairs)),
+    payloads = {
+        "meta": meta(features, names),
+        "votes": votes(features),
+        "entries": entries(features, table),
+        "split": split(decomposition),
+        "affinity": affinity(pairs),
+    }
+    written = [_write_json(name, payload) for name, payload in payloads.items()]
+    tables = latex_tables(payloads, payloads["meta"]["countries"])
+    written += [_write_latex(name, frame) for name, frame in tables.items()]
+    written += [
         _write_csv("pairs", features),
         _write_csv("entries", table),
         _write_csv("decomposition", decomposition),
@@ -152,7 +214,7 @@ def main() -> list[Path]:
     ]
     for path in written:
         size = path.stat().st_size / 1024
-        print(f"[export] {path.relative_to(config.ROOT).as_posix()}: {size:.0f} KB")
+        print(f"[export] {config.shown(path)}: {size:.0f} KB")
     return written
 
 

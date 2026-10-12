@@ -17,6 +17,16 @@ INTERIM = DATA / "interim"
 PROCESSED = DATA / "processed"
 MANUAL = DATA / "manual"
 EXPORT = DATA / "export"
+
+
+def shown(path: Path) -> str:
+    """path for log lines, relative inside the repo and absolute outside"""
+    try:
+        return path.relative_to(ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 CACHE = ROOT / "cache"
 
 SOURCES_YML = ROOT / "sources.yml"

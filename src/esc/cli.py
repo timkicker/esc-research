@@ -47,7 +47,7 @@ def _lint() -> None:
 
 def _remove(*paths) -> None:
     for path in paths:
-        print(f">> removing {path.relative_to(config.ROOT).as_posix()}")
+        print(f">> removing {config.shown(path)}")
         shutil.rmtree(path, ignore_errors=True)
 
 

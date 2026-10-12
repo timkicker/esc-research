@@ -96,6 +96,27 @@ def test_meta_refuses_a_country_without_a_display_name():
         export.meta(features(), names)
 
 
+def test_latex_tables_name_the_far_entries_and_keep_the_public_top():
+    shares = {"entry_only": 0.25, "pair_only": 0.03, "overlap": 0.02, "noise": 0.7}
+    rows = [[2016 + i, "GRC", "a", "b", 1, 1, 10 * i, 300 - 40 * i] for i in range(8)]
+    columns = ["year", "country", "artist", "song", "place", "order", "jury"]
+    affinity = [["t", "GRC", "CYP", 10.5, 12.0, 8], ["j", "CYP", "GRC", 9.4, 11.0, 7]]
+    payloads = {
+        "split": {"split": {"jury": shares, "televote": shares}},
+        "entries": {"columns": [*columns, "televote"], "rows": rows},
+        "affinity": {
+            "columns": ["type", "from", "to", "excess", "points", "meetings"],
+            "rows": affinity,
+        },
+    }
+    names = {"GRC": "Greece", "CYP": "Cyprus"}
+    tables = export.latex_tables(payloads, names)
+    assert list(tables["split"]["jury"]) == [25.0, 3.0, 2.0, 70.0]
+    assert len(tables["scatter"]) == 8
+    assert len(tables["scatter-named"]) == 5
+    assert list(tables["favourites-public"]["label"]) == ["Greece $\\to$ Cyprus"]
+
+
 def test_json_is_written_as_utf8_without_escapes(tmp_path, monkeypatch):
     monkeypatch.setattr(export, "EXPORT", tmp_path)
     path = export._write_json("probe", {"artist": "Zoë"})
