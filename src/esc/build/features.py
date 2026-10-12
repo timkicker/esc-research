@@ -54,10 +54,10 @@ def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def _running_position(panel: pd.DataFrame) -> pd.DataFrame:
-    """slot in the final scaled to 0..1, finals differ in size
+    """slot in the final scaled to 0..1 because finals differ in size
 
-    the order is published two to three days before the final, so it may go
-    into a forecast. the semi final result may not, it stays secret until
+    the order is out two to three days before the final and may go into a
+    forecast. the semi final result may not because it stays secret until
     after the final
     """
     entries = io.read_parquet("entries", "processed")

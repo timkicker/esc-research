@@ -30,7 +30,7 @@ ESTIMATORS = {
     "boosting": lambda: HistGradientBoostingRegressor(
         max_depth=4, learning_rate=0.06, max_iter=300, random_state=0
     ),
-    # two cores so a laptop stays usable, results do not depend on it
+    # two cores keep a laptop usable and do not change the results
     "forest": lambda: RandomForestRegressor(
         n_estimators=200,
         min_samples_leaf=20,

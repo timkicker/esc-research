@@ -2,24 +2,12 @@
 
 python -m esc.models.explain
 
-three fits per vote type, entry only (the receiver effect), relationship only
-(the pair features) and both. every fit is scored on years it never saw. the
-share only the entry explains is r2(both) - r2(pair), the share only the
-relationship explains is r2(both) - r2(entry), what both explain together is
-the overlap and the rest is noise.
+three fits per vote type (entry only, pair only, both) scored on years they
+never saw. ridge is the headline and boosting only a check, see the pitfall on
+entry level features in README.md
 
-the receiver effect is the whole entry (song, staging, artist) and it also
-carries the bloc votes of everyone else, so the entry share leans high and the
-relationship share leans low
-
-ridge is the headline. the receiver effect leaves the voter out, so within one
-entry a voter that gave more sees a slightly lower value. default boosting
-learns that sawtooth in the training years and loses a third of the entry fit
-on new years (jury r2 0.15 against 0.27). the coarse boosting here only checks
-the ridge split
-
-the residual of the ridge entry only fit is what a country gave beyond what the
-entry earned. averaged per directed pair it says who favours whom
+the residual of the ridge entry fit is what a voter gave beyond what the entry
+earned and its mean per directed pair says who favours whom
 """
 
 from __future__ import annotations

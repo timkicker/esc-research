@@ -10,7 +10,7 @@ import pytest
 from esc import config, io
 from esc.parse import eurovisionworld
 
-# a three country final, se gives jury points only, xx is not in the map
+# a two country final where at gives se jury points only
 SCRIPT = {
     "voting_data": {"year": 2025, "jury": True, "tele": True},
     "voting_songs": {"at": ["JJ", "Wasted Love", 1], "se": ["KAJ", "Bara", 1]},

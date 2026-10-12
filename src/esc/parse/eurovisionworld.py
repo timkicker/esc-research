@@ -104,7 +104,7 @@ def parse_votes() -> Path:
         for voter, receiver, _, jury, tele in data["voting_point"]:
             given[("jury", voter, receiver)] = jury
             given[("televote", voter, receiver)] = tele
-        # every voter against every finalist, the awards only list who got points
+        # every voter against every finalist because the awards skip the zeros
         for vote_type in ("jury", "televote"):
             voters = {v for (t, v, _), p in given.items() if t == vote_type and p}
             for voter in sorted(voters):
