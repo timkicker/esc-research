@@ -13,9 +13,10 @@ from esc import config, pipeline
 
 
 def _model() -> None:
-    from esc.models import run
+    from esc.models import explain, run
 
     run.main()
+    explain.main()
 
 
 def _all() -> None:
@@ -48,7 +49,7 @@ COMMANDS = {
     "data": (pipeline.data, "download and scrape into data/raw"),
     "parse": (pipeline.parse, "raw files into typed tables in data/interim"),
     "build": (pipeline.build, "the pair table in data/processed"),
-    "model": (_model, "fit on all years but one and test on that one"),
+    "model": (_model, "forecast and explain, every year tested unseen"),
     "all": (_all, "data, parse, build and model in a row"),
     "test": (_test, "run the tests"),
     "lint": (_lint, "ruff check and format check"),

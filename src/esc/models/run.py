@@ -33,8 +33,11 @@ ESTIMATORS = {
 }
 
 
-def _fit_predict(panel: pd.DataFrame, columns: list[str], estimator: str) -> pd.Series:
+def fit_predict(
+    panel: pd.DataFrame, columns: list[str], estimator: str, factories=None
+) -> pd.Series:
     """one prediction per row, each produced by a model that never saw its year"""
+    factories = factories or ESTIMATORS
     out = pd.Series(np.nan, index=panel.index, dtype="float64")
     matrix = design(panel, columns)
     target = panel[TARGET].astype("float64")
@@ -43,14 +46,14 @@ def _fit_predict(panel: pd.DataFrame, columns: list[str], estimator: str) -> pd.
         test = panel["year"] == year
         train = ~test
         medians = matrix[train].median()
-        model = ESTIMATORS[estimator]()
+        model = factories[estimator]()
         model.fit(matrix[train].fillna(medians), target[train])
         out[test] = model.predict(matrix[test].fillna(medians))
     return out
 
 
 def evaluate(panel: pd.DataFrame, columns: list[str], estimator: str) -> dict:
-    predicted = _fit_predict(panel, columns, estimator)
+    predicted = fit_predict(panel, columns, estimator)
     frame = panel.assign(predicted=predicted)
 
     actual = totals(frame, TARGET).rename(columns={TARGET: "actual"})
