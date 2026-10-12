@@ -17,7 +17,7 @@
 
   <main>
     <h1>Song or neighbours?</h1>
-    <p class="meta">Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker<br>
+    <p class="meta">Anna-Ilona&nbsp;Nikolaeva, Yauheni&nbsp;Zviazdou and Tim&nbsp;Kicker<br>
       Introduction to Data Science, University of Helsinki, October 2026</p>
 
     <p class="lead">Since 2016 Cyprus has made it to the Eurovision final eight times.
@@ -27,6 +27,23 @@
     <p>We went through every vote in the ten finals from 2016 to 2026 and kept the jury
       and the public apart. For each vote we asked how much of it the song explains and
       how much the relationship between the two countries.</p>
+
+    <h2>Juries and the public disagree</h2>
+
+    <p>Each dot is one song in a final. The further a dot sits from the line, the more the
+      juries and the public disagreed about it. Israel in 2024 got 52 points from the juries
+      and 323 from the public. Switzerland in 2025 got 214 from the juries and none at all
+      from the public.</p>
+
+    <figure>
+      <div class="diagramm quadrat"><canvas id="streuung" role="img"
+        aria-label="Points from the juries against points from the public for every song in a final since 2016"></canvas></div>
+      <figcaption>Every song in a final from 2016 to 2026, 257 in total.</figcaption>
+      <details class="tabelle">
+        <summary>Show as table</summary>
+        <div class="rollbar"><table id="streuung-tabelle"></table></div>
+      </details>
+    </figure>
 
     <h2>The neighbours matter more to the public</h2>
 
@@ -51,14 +68,95 @@
       <span class="num" data-split="jury.pair_only">3</span> percent, so the neighbours count about four times
       as much for the public as they do for the juries.</p>
 
+    <h2>Who favours whom</h2>
+
+    <p>For every pair of countries we compare the points one gave the other with what the
+      song got from everybody else. The difference, averaged over all finals the two
+      countries shared, shows who favours whom. We only list pairs that met in at least
+      three finals.</p>
+
+    <div class="zwei">
+      <section>
+        <h3>Public</h3>
+        <ol class="rang" id="liebling-t"></ol>
+      </section>
+      <section>
+        <h3>Juries</h3>
+        <ol class="rang" id="liebling-j"></ol>
+      </section>
+    </div>
+
+    <p>A high number does not mean that anyone cheated. Neighbours often share a music
+      market or a language. Many people living in one country also come from the other and
+      still vote for home.</p>
+
+    <h2 id="explorer">Look up your country</h2>
+
+    <p>Pick a year and a country to see who it gave points to or who gave points to it.
+      Below that are its favourites over all ten finals.</p>
+
+    <div class="steuerung">
+      <label>Year
+        <select id="wahl-jahr"></select>
+      </label>
+      <label>Country
+        <select id="wahl-land"></select>
+      </label>
+      <div class="schalter" role="group" aria-label="Direction">
+        <button type="button" id="richtung-gab" aria-pressed="true">Gave</button>
+        <button type="button" id="richtung-bekam" aria-pressed="false">Got</button>
+      </div>
+    </div>
+
+    <figure>
+      <p class="meta" id="explorer-hinweis" hidden></p>
+      <div class="diagramm" id="explorer-flaeche"><canvas id="explorer-diagramm" role="img"
+        aria-label="Points between the chosen country and the others in the chosen year, juries and public"></canvas></div>
+      <details class="tabelle">
+        <summary>Show as table</summary>
+        <table id="explorer-tabelle"></table>
+      </details>
+    </figure>
+
+    <div class="zwei">
+      <section>
+        <h3 id="fav-gibt-titel">It favours</h3>
+        <ol class="rang" id="fav-gibt"></ol>
+      </section>
+      <section>
+        <h3 id="fav-bekommt-titel">It is favoured by</h3>
+        <ol class="rang" id="fav-bekommt"></ol>
+      </section>
+    </div>
+    <p class="meta">Public vote, points beyond what the song earned, pairs with at least
+      three finals together.</p>
+
+    <h2>Who this is for</h2>
+
+    <p>If you follow Eurovision, you can check the old line about neighbours with real
+      numbers and see which countries your own country favours. If you work for a
+      delegation, you can see which part of a result you can change with the song and its
+      promotion and which part comes from neighbours and diaspora. Juries and the public
+      also react differently, so the same entry can need a different plan for each.</p>
+
     <section class="quellen">
+      <h2>How we did it</h2>
+      <p>We put the results of every final since 1957 next to what connects each pair of
+        countries (distance, a shared border or language). A model learned from nine finals
+        at a time and was always tested on the tenth. The technical report has the details.</p>
       <h2>Sources</h2>
+      <p>Results up to 2023 come from the Eurovision Song Contest Dataset by J. Spijkervet,
+        which asks to be cited. Results from 2024 on come from eurovisionworld.com. Distance
+        and shared borders or languages come from the GeoDist database of CEPII
+        (Etalab 2.0).</p>
       <ol>
         <li id="q1">Cyprus was in the final in 2016, 2017, 2018, 2019, 2021, 2023, 2024 and 2026, with
           12 points from the Greek televote each time. Results up to 2023 from
           J. Spijkervet, The Eurovision Song Contest Dataset, Zenodo, 2020,
           <a href="https://doi.org/10.5281/zenodo.4036457">doi:10.5281/zenodo.4036457</a>.
           From 2024 on from <a href="https://eurovisionworld.com/">eurovisionworld.com</a>.</li>
+        <li id="q2">T. Mayer and S. Zignago, Notes on CEPII's distances measures: the GeoDist
+          database, CEPII Working Paper 2011-25, 2011.</li>
       </ol>
     </section>
   </main>
