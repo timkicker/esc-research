@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import RidgeCV
 
 from esc import io
@@ -29,6 +29,14 @@ ESTIMATORS = {
     "ridge": lambda: RidgeCV(alphas=np.logspace(-3, 3, 13)),
     "boosting": lambda: HistGradientBoostingRegressor(
         max_depth=4, learning_rate=0.06, max_iter=300, random_state=0
+    ),
+    # two cores so a laptop stays usable, results do not depend on it
+    "forest": lambda: RandomForestRegressor(
+        n_estimators=200,
+        min_samples_leaf=20,
+        max_features=0.5,
+        n_jobs=2,
+        random_state=0,
     ),
 }
 
