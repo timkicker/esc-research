@@ -58,6 +58,8 @@ The finished tables are parquet files in `data/processed/` and `features.parquet
 
 There is one row for every country that gives points to another country in a final, separately for jury and televote. That is 19800 rows over ten contests. Older contests are parsed too, but we only use them for the history between two countries since the jury and televote points were not published separately before 2016.
 
+`uv run esc model` writes three more tables to `data/processed/`. `model_summary` has the forecast scores for every model and every set of inputs. `decomposition` splits the points into the part the entry explains by itself, the part the relationship between the two countries explains and the rest, separately for jury and televote. `pair_affinity` says for every pair of countries how many points one gave the other on average beyond what the entry earned. On disk it is sorted by country, so sort it by `excess` if you want a ranking.
+
 ## Layout
 
 ```
