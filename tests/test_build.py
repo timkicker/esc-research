@@ -132,6 +132,14 @@ def test_receiver_effect_leaves_the_focal_voter_out(built):
     assert row["receiver_effect"] == pytest.approx(others["points"].mean())
 
 
+def test_running_position_runs_from_first_to_last_slot(built):
+    table = io.read_parquet("features", "processed")
+    assert table["running_position"].notna().all()
+    per_year = table.groupby("year")["running_position"]
+    assert (per_year.min() == 0).all()
+    assert (per_year.max() == 1).all()
+
+
 def test_a_duplicated_join_key_is_caught(interim):
     static = io.read_parquet("dyad_static", "interim")
     io.write_parquet(

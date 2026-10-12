@@ -30,6 +30,7 @@ PAIR = [
 ATTENTION = ["web_interest", "youtube_interest"]
 RECEIVER = ["receiver_effect"]
 LYRICS = ["sentiment", "theme", "repetition_verse", "repetition_chorus"]
+ORDER = ["running_position"]
 
 # fixed categories, so a test year with a theme missing still gets every column
 CATEGORIES = {"sentiment": SENTIMENTS, "theme": THEMES}
@@ -40,14 +41,19 @@ ENTRY = ["year", "vote_type", "to_iso3"]
 
 
 def feature_sets(panel: pd.DataFrame) -> dict[str, list[str]]:
-    """the four comparisons the canvas promises, minus what nobody delivered"""
+    """the comparisons the canvas promises, minus what nobody delivered"""
     have = [c for c in ATTENTION if c in panel.columns]
+    order = [c for c in ORDER if c in panel.columns]
     sets = {"pair": PAIR, "pair+receiver": PAIR + RECEIVER}
     if "sentiment" in panel.columns:
         sets["pair+lyrics"] = PAIR + LYRICS
+    if order:
+        sets["pair+order"] = PAIR + order
     if have:
         sets["pair+attention"] = PAIR + have
         sets["all"] = PAIR + RECEIVER + have
+    if have and order:
+        sets["pair+attention+order"] = PAIR + have + order
     return {
         name: [c for c in cols if c in panel.columns] for name, cols in sets.items()
     }

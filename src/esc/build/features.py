@@ -53,6 +53,31 @@ def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def _running_position(panel: pd.DataFrame) -> pd.DataFrame:
+    """slot in the final scaled to 0..1, finals differ in size
+
+    the order is published two to three days before the final, so it may go
+    into a forecast. the semi final result may not, it stays secret until
+    after the final
+    """
+    entries = io.read_parquet("entries", "processed")
+    finals = entries[entries["round"] == "final"]
+    slots = finals.groupby("year")["running_order"].transform("max")
+    # 2020 has one placeholder row and no final
+    order = finals["running_order"].astype("float64")
+    span = (slots - 1).astype("float64").where(slots > 1)
+    lookup = finals.assign(running_position=(order - 1) / span)
+    out = panel.merge(
+        lookup[["entry_id", "running_position"]],
+        on="entry_id",
+        how="left",
+        validate="m:1",
+    )
+    missing = int(out["running_position"].isna().sum())
+    log(STEP, f"{missing} of {len(out)} rows without a running order")
+    return out
+
+
 def build() -> Path:
     panel = io.read_parquet("dyads", "processed")
     n_in = len(panel)
@@ -74,6 +99,7 @@ def build() -> Path:
 
     panel["log_dist"] = np.log(panel["dist"].astype("float64"))
     panel = _past_points(panel)
+    panel = _running_position(panel)
 
     thin = int(np.isnan(panel["receiver_effect"]).sum())
     if thin:

@@ -89,3 +89,12 @@ def test_every_set_with_the_receiver_effect_counts_as_explanatory():
     )
     sets = models.feature_sets(panel)
     assert models.explanatory(sets) == {"pair+receiver", "all"}
+
+
+def test_running_order_sets_appear_only_with_the_column():
+    base = [*models.PAIR, *models.RECEIVER, "web_interest", "youtube_interest"]
+    assert "pair+order" not in models.feature_sets(pd.DataFrame(columns=base))
+    sets = models.feature_sets(pd.DataFrame(columns=[*base, *models.ORDER]))
+    assert sets["pair+order"] == [*models.PAIR, *models.ORDER]
+    assert "running_position" in sets["pair+attention+order"]
+    assert "pair+attention+order" not in models.explanatory(sets)
