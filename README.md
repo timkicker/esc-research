@@ -8,12 +8,22 @@ The rules for working on the code, the schema and the traps we already ran into 
 
 All you need is [uv](https://docs.astral.sh/uv/). It installs Python 3.12 and every package by itself on the first run.
 
+Clone the repo first and run everything below inside the `esc-research` folder:
+
+```
+git clone https://github.com/timkicker/esc-research.git
+cd esc-research
+```
+
 On Windows in PowerShell:
 
 ```
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 copy .env.example .env
+notepad .env
 ```
+
+If PowerShell can't find `uv` afterwards, close it and open a new window.
 
 On Linux or Mac:
 
