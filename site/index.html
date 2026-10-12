@@ -34,7 +34,7 @@
       <div class="plot" id="streuung"></div>
       <details class="tabelle">
         <summary>Show as table</summary>
-        <div class="rollbar"><table id="streuung-tabelle"></table></div>
+        <div class="rollbar" tabindex="0" role="region" aria-label="All songs as a table"><table id="streuung-tabelle"></table></div>
       </details>
     </figure>
 
@@ -42,8 +42,7 @@
 
     <div class="kennzahl">
       <b>About 4&times;</b>
-      <span>weight of the two countries for the public against the juries
-        <details class="info">
+      <span>Public vs juries, weight of the <span class="zusammen">relationship&nbsp;<details class="info">
           <summary aria-label="How this is measured">i</summary>
           <p>For the song we look at how well it did with everybody else. For the two
             countries we look at how close they are (distance, a shared border or
@@ -51,32 +50,34 @@
             how much of the differences in points each part predicts, always on finals
             the model never saw. Depending on the model the two countries count 4.2 to 4.5
             times as much for the public.</p>
-        </details>
-      </span>
+        </details></span></span>
     </div>
 
     <table class="vier" id="split-tabelle"></table>
 
-    <h2>Who favours whom</h2>
+    <h2 class="mit-info">Who favours whom
+      <details class="info">
+        <summary aria-label="What a high number means">i</summary>
+        <p>A high number does not mean that anyone cheated. Neighbours often share a music
+          market or a language. Many people living in one country also come from the other
+          and still vote for home.</p>
+      </details>
+    </h2>
 
-    <p>For every pair of countries we compare the points one gave the other with what the
-      song got from everybody else. The difference, averaged over all finals the two
-      countries shared, shows who favours whom.</p>
-
-    <div class="zwei untereinander">
-      <section>
+    <div class="tabs nur-handy" role="tablist" aria-label="Vote">
+      <button type="button" role="tab" id="rang-tab-t" aria-selected="true" aria-controls="rang-t">Public</button>
+      <button type="button" role="tab" id="rang-tab-j" aria-selected="false" aria-controls="rang-j">Juries</button>
+    </div>
+    <div class="zwei rang-paar">
+      <section id="rang-t" role="tabpanel" aria-labelledby="rang-tab-t">
         <h3>Public</h3>
-        <ol class="rang" id="liebling-t"></ol>
+        <table class="rang" id="liebling-t"></table>
       </section>
-      <section>
+      <section id="rang-j" role="tabpanel" aria-labelledby="rang-tab-j">
         <h3>Juries</h3>
-        <ol class="rang" id="liebling-j"></ol>
+        <table class="rang" id="liebling-j"></table>
       </section>
     </div>
-
-    <p>A high number does not mean that anyone cheated. Neighbours often share a music
-      market or a language. Many people living in one country also come from the other and
-      still vote for home.</p>
 
     <h2 id="explorer">Look up your country</h2>
 
@@ -106,27 +107,29 @@
     <div class="zwei">
       <section>
         <h3 id="fav-gibt-titel">It favours</h3>
-        <ol class="rang" id="fav-gibt"></ol>
+        <table class="rang" id="fav-gibt"></table>
       </section>
       <section>
         <h3 id="fav-bekommt-titel">It is favoured by</h3>
-        <ol class="rang" id="fav-bekommt"></ol>
+        <table class="rang" id="fav-bekommt"></table>
       </section>
     </div>
 
     <h2>Who this is for</h2>
 
-    <p>If you follow Eurovision, you can check the old line about neighbours with real
-      numbers and see which countries your own country favours. If you work for a
-      delegation, you can see which part of a result you can change with the song and its
-      promotion and which part comes from neighbours and diaspora. Juries and the public
-      also react differently, so the same entry can need a different plan for each.</p>
+    <p>Fans can see how often a country rewards its neighbours and look up their own
+      country. Delegations can see which part of a result came from the song and which part
+      came from neighbours and diaspora.</p>
 
     <section class="quellen">
       <h2>How we did it</h2>
       <p>We put the results of every final since 1957 next to what connects each pair of
         countries (distance, a shared border or language). A model learned from nine finals
         at a time and was always tested on the tenth. The technical report has the details.</p>
+      <p>For every pair of countries we compare the points one gave the other with what the
+        song got from everybody else. The difference, averaged over all finals the two
+        countries shared, shows who favours whom. Only pairs that met in at least three
+        finals are listed.</p>
       <h2>Sources</h2>
       <p>Results up to 2023 come from the Eurovision Song Contest Dataset by J. Spijkervet,
         which asks to be cited. Results from 2024 on come from eurovisionworld.com. Distance

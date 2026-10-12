@@ -5,8 +5,6 @@ const SVG = "http://www.w3.org/2000/svg";
 const PHONE_W = 500;
 
 const nf = (n) => Math.round(n).toLocaleString("en").replace(/,/g, NB);
-const pts = (v) => `+${v.toFixed(1)} pts`;
-const finals = (n) => `${n} finals`;
 const percent = (share) => `${Math.round(share * 100)}${NB}%`;
 
 const escape = (text) =>
@@ -107,19 +105,51 @@ function farEntries(entries) {
   return new Set([...byGap.slice(0, 2), ...byGap.slice(-3)]);
 }
 
+// songs on the same spot (often 0 and 0) fan out on a small spiral, the same way every time
+function spread(entries, x, y) {
+  const seen = new Map();
+  return entries.map((e) => {
+    const key = `${e.jury},${e.televote}`;
+    const k = seen.get(key) ?? 0;
+    seen.set(key, k + 1);
+    const angle = k * 2.4;
+    const radius = k ? 2.5 * Math.sqrt(k) : 0;
+    return { e, cx: x(e.jury) + radius * Math.cos(angle), cy: y(e.televote) + radius * Math.sin(angle) };
+  });
+}
+
+// put a name where it covers no dot and no other name: right, left, above, below
+function placeName(label, dot, dots, taken, w) {
+  const width = label.length * 7.4;
+  const height = 14;
+  const options = [
+    { x: dot.cx + 10, y: dot.cy + 4, anchor: "start", box: [dot.cx + 9, dot.cy - 8, width, height] },
+    { x: dot.cx - 10, y: dot.cy + 4, anchor: "end", box: [dot.cx - 9 - width, dot.cy - 8, width, height] },
+    { x: dot.cx, y: dot.cy - 12, anchor: "middle", box: [dot.cx - width / 2, dot.cy - 24, width, height] },
+    { x: dot.cx, y: dot.cy + 20, anchor: "middle", box: [dot.cx - width / 2, dot.cy + 8, width, height] },
+  ];
+  const clear = ([bx, by, bw, bh]) =>
+    bx >= 0 && bx + bw <= w &&
+    !dots.some((d) => d !== dot && d.cx + 4 > bx && d.cx - 4 < bx + bw && d.cy + 4 > by && d.cy - 4 < by + bh) &&
+    !taken.some(([tx, ty, tw, th]) => tx < bx + bw && tx + tw > bx && ty < by + bh && ty + th > by);
+  const pick = options.find((o) => clear(o.box)) ?? options[0];
+  taken.push(pick.box);
+  return pick;
+}
+
 function drawScatter(host, entries, names) {
   const w = host.clientWidth;
   if (!w) return;
-  const phone = w < PHONE_W;
   const TOP = 28;
   const BOTTOM = 44;
-  const plotH = Math.min(w, phone ? 340 : 460);
-  const h = plotH + TOP + BOTTOM;
+  // square plot, the same pixels per point on both axes, so the diagonal runs at 45 degrees
+  const plot = w - 12;
+  const h = plot + TOP + BOTTOM;
   const most = Math.max(...entries.map((e) => Math.max(e.jury, e.televote)));
   const step = niceStep(most, 5);
   const top = Math.ceil(most / step) * step;
-  const x = linear(0, top, 6, w - 6);
-  const y = linear(0, top, TOP + plotH, TOP);
+  const x = linear(0, top, 6, 6 + plot);
+  const y = linear(0, top, TOP + plot, TOP);
   const ticks = Array.from({ length: top / step + 1 }, (_, i) => i * step);
   const far = farEntries(entries);
 
@@ -131,18 +161,22 @@ function drawScatter(host, entries, names) {
     svg.append(el("line", { class: v === 0 ? "base" : "grid", x1: 0, x2: w, y1: y(v), y2: y(v) }));
     if (v > 0) svg.append(el("text", { class: "axis", x: w, y: y(v) - 5, "text-anchor": "end" }, nf(v)));
   }
-  svg.append(el("text", { class: "axis", x: 0, y: 14 }, "Points from the public"));
+  // the y title sits over its own numbers
+  svg.append(el("text", { class: "axis", x: w, y: 12, "text-anchor": "end" }, "Points from the public"));
 
-  // the line where both agree, and the two halves it splits
+  // the line where both agree, the two halves named between the grid lines
+  const between = (k) => y(step * (k + 0.5)) + 4;
   svg.append(el("line", { class: "eq", x1: x(0), y1: y(0), x2: x(top), y2: y(top) }));
-  svg.append(el("text", { class: "note", x: x(top * 0.8) - 12, y: y(top * 0.8), "text-anchor": "end" }, "same score"));
-  // both halves named inside their empty corners, away from the axis titles
-  svg.append(el("text", { class: "note", x: x(top * 0.1), y: y(top * 0.8) }, "Public liked it more"));
-  svg.append(el("text", { class: "note", x: w - 4, y: y(top * 0.14), "text-anchor": "end" }, "Juries liked it more"));
+  const sameAt = step * (ticks.length - 2.5);
+  svg.append(el("text", { class: "note", x: x(sameAt) - 10, y: between(ticks.length - 3), "text-anchor": "end" }, "same score"));
+  svg.append(el("text", { class: "note", x: x(0) + 4, y: between(ticks.length - 2) }, "Public liked it more"));
+  svg.append(el("text", { class: "note", x: x(top), y: between(0), "text-anchor": "end" }, "Juries liked it more"));
 
   // every song as a hollow grey ring, keyboard steps along the jury axis
   const ordered = [...entries].sort((a, b) => a.jury - b.jury || a.televote - b.televote);
-  ordered.forEach((e, i) => {
+  const dots = spread(ordered, x, y);
+  dots.forEach((d, i) => {
+    const { e } = d;
     const named = far.has(e);
     const g = el("g", {
       class: named ? "mark named" : "mark",
@@ -152,26 +186,25 @@ function drawScatter(host, entries, names) {
       "data-tip": `${names[e.country]} ${e.year}\nJuries ${nf(e.jury)}, public ${nf(e.televote)}`,
       "aria-label": `${names[e.country]} ${e.year}, juries ${e.jury}, public ${e.televote}`,
     });
-    g.append(el("circle", { class: "hit", cx: x(e.jury), cy: y(e.televote), r: 9 }));
-    g.append(el("circle", { class: named ? "dot" : "ring", cx: x(e.jury), cy: y(e.televote), r: named ? 5 : 3.5 }));
+    g.append(el("circle", { class: "hit", cx: d.cx, cy: d.cy, r: 9 }));
+    g.append(el("circle", { class: named ? "dot" : "ring", cx: d.cx, cy: d.cy, r: named ? 5 : 3.5 }));
     svg.append(g);
   });
 
-  // names of the far ones, kept inside the plot
-  for (const e of far) {
-    const label = `${names[e.country]} ${e.year}`;
-    const cx = x(e.jury);
-    const right = cx + 10 + label.length * 7.4 > w;
-    svg.append(el("text", { class: "name", x: right ? cx - 10 : cx + 10, y: y(e.televote) + 4,
-      "text-anchor": right ? "end" : "start" }, label));
+  // names of the far ones, placed where they hide nothing
+  const taken = [];
+  for (const d of dots.filter((dd) => far.has(dd.e))) {
+    const label = `${names[d.e.country]} ${d.e.year}`;
+    const spot = placeName(label, d, dots, taken, w);
+    svg.append(el("text", { class: "name", x: spot.x, y: spot.y, "text-anchor": spot.anchor }, label));
   }
 
   // x values under the zero line, first left and last right aligned
   ticks.forEach((v, i) => {
     const anchor = i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle";
-    svg.append(el("text", { class: "axis", x: i === ticks.length - 1 ? w : x(v), y: TOP + plotH + 18, "text-anchor": anchor }, nf(v)));
+    svg.append(el("text", { class: "axis", x: i === ticks.length - 1 ? w : x(v), y: TOP + plot + 18, "text-anchor": anchor }, nf(v)));
   });
-  svg.append(el("text", { class: "axis", x: w, y: TOP + plotH + 38, "text-anchor": "end" }, "Points from the juries"));
+  svg.append(el("text", { class: "axis", x: w, y: TOP + plot + 38, "text-anchor": "end" }, "Points from the juries"));
 
   svg.addEventListener("keydown", stepFocus);
   host.replaceChildren(svg);
@@ -192,8 +225,7 @@ function scatterTable(entries, names) {
 /* ---------- the four times ---------- */
 
 function splitTable(split) {
-  const head = '<tr><td></td><th scope="col" class="num"><i class="dot jury"></i>Juries</th>' +
-    '<th scope="col" class="num"><i class="dot public"></i>Public</th></tr>';
+  const head = '<tr><td></td><th scope="col" class="num">Juries</th><th scope="col" class="num">Public</th></tr>';
   const rows = [["The song", "entry_only"], ["The two countries", "pair_only"]]
     .map(([label, key]) =>
       `<tr><th scope="row">${label}</th><td class="num">${percent(split.jury[key])}</td>` +
@@ -204,23 +236,55 @@ function splitTable(split) {
 
 /* ---------- who favours whom ---------- */
 
-function rankList(id, rows, label, empty) {
-  const list = document.getElementById(id);
-  list.innerHTML = rows.length
-    ? rows
-        .map((r) =>
-          `<li><span class="nm">${escape(label(r))}</span>` +
-          `<span class="n">${finals(r.meetings)}</span><span class="wert">${pts(r.excess)}</span></li>`)
-        .join("")
-    : `<li class="leer">${escape(empty)}</li>`;
+const signed = (v) => (v < 0 ? `−${Math.abs(v).toFixed(1)}` : `+${v.toFixed(1)}`);
+
+function rankTable(id, rows, label, empty, first = "Pair") {
+  const table = document.getElementById(id);
+  if (!rows.length) {
+    table.innerHTML = `<tr><td class="leise">${escape(empty)}</td></tr>`;
+    return;
+  }
+  const head = `<tr><th scope="col">${first}</th><th scope="col" class="num">Finals</th>` +
+    '<th scope="col" class="num">Points above song</th></tr>';
+  const body = rows
+    .map((r) =>
+      `<tr><th scope="row">${escape(label(r))}</th><td class="num leise">${r.meetings}</td>` +
+      `<td class="num">${signed(r.excess)}</td></tr>`)
+    .join("");
+  table.innerHTML = head + body;
 }
 
 function topPairs(affinity, names, count = 8) {
   for (const type of ["t", "j"]) {
     const rows = affinity.filter((r) => r.type === type).sort((a, b) => b.excess - a.excess).slice(0, count);
-    rankList(`liebling-${type}`, rows, (r) => `${names[r.from]} → ${names[r.to]}`, "");
+    rankTable(`liebling-${type}`, rows, (r) => `${names[r.from]} → ${names[r.to]}`, "");
   }
 }
+
+// on a phone the two lists share one place and a tab switches between them
+function setupRankTabs() {
+  const tabs = { t: document.getElementById("rang-tab-t"), j: document.getElementById("rang-tab-j") };
+  const panels = { t: document.getElementById("rang-t"), j: document.getElementById("rang-j") };
+  let shown = "t";
+  const paint = () => {
+    for (const k of ["t", "j"]) {
+      tabs[k].setAttribute("aria-selected", String(k === shown));
+      tabs[k].tabIndex = k === shown ? 0 : -1;
+      panels[k].classList.toggle("aus", k !== shown);
+    }
+  };
+  for (const k of ["t", "j"]) {
+    tabs[k].addEventListener("click", () => { shown = k; paint(); });
+    tabs[k].addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      shown = shown === "t" ? "j" : "t";
+      paint();
+      tabs[shown].focus();
+    });
+  }
+  paint();
+}
+
 
 /* ---------- a select-only combobox, the aria pattern for a listbox behind a button ---------- */
 
@@ -337,11 +401,15 @@ function explorerRows(votes, state) {
 }
 
 function explorerTable(rows, names) {
-  const cell = (v) => (v ? `<td class="num">${nf(v)}</td>` : '<td class="num leise">–</td>');
-  const head = '<tr><th scope="col">Country</th><th scope="col" class="num"><i class="dot jury"></i>Juries</th>' +
-    '<th scope="col" class="num"><i class="dot public"></i>Public</th></tr>';
+  // no points stays an empty cell
+  const cell = (v) => `<td class="num">${v ? nf(v) : ""}</td>`;
+  const head = '<tr><th scope="col">Country</th><th scope="col" class="num">Juries</th>' +
+    '<th scope="col" class="num">Public</th>' +
+    '<th scope="col" class="num" aria-sort="descending">Total <span aria-hidden="true">↓</span></th></tr>';
   const body = rows
-    .map((r) => `<tr><th scope="row">${escape(names[r.other])}</th>${cell(r.jury)}${cell(r.public)}</tr>`)
+    .map((r) =>
+      `<tr><th scope="row">${escape(names[r.other])}</th>${cell(r.jury)}${cell(r.public)}` +
+      `<td class="num summe">${nf(r.jury + r.public)}</td></tr>`)
     .join("");
   document.getElementById("explorer-tabelle").innerHTML = rows.length ? head + body : "";
 }
@@ -352,8 +420,8 @@ function favourites(affinity, names, country) {
   const gets = publicVote.filter((r) => r.to === country).sort((a, b) => b.excess - a.excess).slice(0, 5);
   document.getElementById("fav-gibt-titel").textContent = `${names[country]} favours`;
   document.getElementById("fav-bekommt-titel").textContent = `${names[country]} is favoured by`;
-  rankList("fav-gibt", gives, (r) => names[r.to], "No pair with three finals together");
-  rankList("fav-bekommt", gets, (r) => names[r.from], "No pair with three finals together");
+  rankTable("fav-gibt", gives, (r) => names[r.to], "No pair with three finals together", "Country");
+  rankTable("fav-bekommt", gets, (r) => names[r.from], "No pair with three finals together", "Country");
 }
 
 function setupExplorer(meta, votes, affinity) {
@@ -423,6 +491,7 @@ async function main() {
   splitTable(splitData.split);
   scatterTable(entries, names);
   topPairs(records(affinityData), names);
+  setupRankTabs();
   setupExplorer(meta, records(voteData), records(affinityData));
 
   const host = document.getElementById("streuung");
