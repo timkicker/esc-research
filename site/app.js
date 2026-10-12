@@ -118,23 +118,169 @@ function spread(entries, x, y) {
   });
 }
 
-// put a name where it covers no dot and no other name: right, left, above, below
-function placeName(label, dot, dots, taken, w) {
-  const width = label.length * 7.4;
-  const height = 14;
-  const options = [
-    { x: dot.cx + 10, y: dot.cy + 4, anchor: "start", box: [dot.cx + 9, dot.cy - 8, width, height] },
-    { x: dot.cx - 10, y: dot.cy + 4, anchor: "end", box: [dot.cx - 9 - width, dot.cy - 8, width, height] },
-    { x: dot.cx, y: dot.cy - 12, anchor: "middle", box: [dot.cx - width / 2, dot.cy - 24, width, height] },
-    { x: dot.cx, y: dot.cy + 20, anchor: "middle", box: [dot.cx - width / 2, dot.cy + 8, width, height] },
+// real text width in the page font, a guess per letter was off by a few pixels
+const measurer = document.createElement("canvas").getContext("2d");
+function textWidth(text, weight = 500) {
+  measurer.font = `${weight} 13px ${getComputedStyle(document.body).fontFamily}`;
+  return measurer.measureText(text).width;
+}
+
+// a box per text that is already in the plot, names must not touch them
+function textBox(x, y, text, anchor, weight = 400) {
+  const w = textWidth(text, weight);
+  const left = anchor === "end" ? x - w : anchor === "middle" ? x - w / 2 : x;
+  return [left - 2, y - 14, w + 4, 19];
+}
+
+// geometry for the label checks
+const DOT_R = 7;
+const overlaps = ([ax, ay, aw, ah], [bx, by, bw, bh]) => ax < bx + bw && bx < ax + aw && ay < by + bh && by < ay + ah;
+const grow = ([x, y, w, h], m) => [x - m, y - m, w + 2 * m, h + 2 * m];
+
+function segmentHitsBox([x1, y1, x2, y2], [bx, by, bw, bh]) {
+  // sample the segment, fine enough for boxes of a few pixels
+  for (let t = 0; t <= 1; t += 0.05) {
+    const px = x1 + (x2 - x1) * t;
+    const py = y1 + (y2 - y1) * t;
+    if (px > bx && px < bx + bw && py > by && py < by + bh) return true;
+  }
+  return false;
+}
+
+function segmentNearDot([x1, y1, x2, y2], d, r) {
+  const vx = x2 - x1;
+  const vy = y2 - y1;
+  const t = Math.max(0, Math.min(1, ((d.cx - x1) * vx + (d.cy - y1) * vy) / (vx * vx + vy * vy || 1)));
+  return Math.hypot(x1 + vx * t - d.cx, y1 + vy * t - d.cy) < r;
+}
+
+function segmentsCross([a, b, c, d], [e, f, g, h]) {
+  const side = (px, py, qx, qy, rx, ry) => Math.sign((qx - px) * (ry - py) - (qy - py) * (rx - px));
+  return side(a, b, c, d, e, f) !== side(a, b, c, d, g, h) && side(e, f, g, h, a, b) !== side(e, f, g, h, c, d);
+}
+
+// put a name where it covers no dot, no axis number and no other name, never under the
+// zero line, stacked in the same order as the dots. near the dot first, further out
+// with a short leader if it has to, and the leader gets the same checks as the name
+function placeName(label, dot, dots, texts, placed, w, floor) {
+  const width = textWidth(label) + 4;
+  const height = 19;
+  // the classic spots right next to the dot, then a grid further out that needs a leader
+  const near = [
+    { dx: 10, dy: 0, anchor: "start" },
+    { dx: -10, dy: 0, anchor: "end" },
+    { dx: 10, dy: -10, anchor: "start" },
+    { dx: -10, dy: -10, anchor: "end" },
+    { dx: 0, dy: -16, anchor: "middle" },
+    { dx: 0, dy: 16, anchor: "middle" },
   ];
-  const clear = ([bx, by, bw, bh]) =>
-    bx >= 0 && bx + bw <= w &&
-    !dots.some((d) => d !== dot && d.cx + 4 > bx && d.cx - 4 < bx + bw && d.cy + 4 > by && d.cy - 4 < by + bh) &&
-    !taken.some(([tx, ty, tw, th]) => tx < bx + bw && tx + tw > bx && ty < by + bh && ty + th > by);
-  const pick = options.find((o) => clear(o.box)) ?? options[0];
-  taken.push(pick.box);
-  return pick;
+  const far = [];
+  for (let dy = 40; dy >= -136; dy -= 8) {
+    if (dy === 0) continue;
+    for (let dx = 12; dx <= 156; dx += 12) {
+      far.push({ dx, dy, anchor: "start", far: true }, { dx: -dx, dy, anchor: "end", far: true });
+    }
+  }
+  const box = (o) => {
+    const x = dot.cx + o.dx;
+    const left = o.anchor === "end" ? x - width : o.anchor === "middle" ? x - width / 2 : x;
+    return [left, dot.cy + o.dy - 10, width, height];
+  };
+  // from the edge of the dot to the nearest point of the name
+  const leader = (b) => {
+    const tx = Math.max(b[0], Math.min(dot.cx, b[0] + b[2]));
+    const ty = Math.max(b[1], Math.min(dot.cy, b[1] + b[3]));
+    const len = Math.hypot(tx - dot.cx, ty - dot.cy) || 1;
+    return [dot.cx + ((tx - dot.cx) / len) * 6, dot.cy + ((ty - dot.cy) / len) * 6, tx, ty];
+  };
+  const inside = ([bx, by, bw, bh]) => bx >= 0 && bx + bw <= w && by >= 0 && by + bh <= floor - 2;
+  const allBoxes = () => [...texts, ...placed.map((p) => p.box)];
+  const freeOfText = (b) => !allBoxes().some((t) => overlaps(t, b));
+  const covered = (b) => dots.filter((d) => d !== dot && overlaps(grow([d.cx, d.cy, 0, 0], DOT_R), b)).length;
+  // a lower dot never gets its name above the name of a higher dot it shares columns with
+  const inOrder = (b) =>
+    placed.every((p) => {
+      if (b[0] >= p.box[0] + p.box[2] || p.box[0] >= b[0] + b[2]) return true;
+      const mine = b[1] + b[3] / 2;
+      const theirs = p.box[1] + p.box[3] / 2;
+      return dot.cy > p.cy ? mine > theirs : mine < theirs;
+    });
+  const leaderClear = (seg) =>
+    !allBoxes().some((t) => segmentHitsBox(seg, grow(t, 4))) &&
+    !dots.some((d) => d !== dot && segmentNearDot(seg, d, DOT_R)) &&
+    !placed.some((p) => p.leader && segmentsCross(seg, p.leader));
+  const clear = (o) => {
+    const b = box(o);
+    const crossesLeader = placed.some((p) => p.leader && segmentHitsBox(p.leader, grow(b, 4)));
+    return inside(b) && freeOfText(b) && covered(b) === 0 && inOrder(b) && !crossesLeader && (!o.far || leaderClear(leader(b)));
+  };
+  // the closest spot that breaks no rule. if none exists, the closest that hides the
+  // fewest dots, never one over text or below the axis
+  const distance = (o) => Math.hypot(o.dx, o.dy);
+  const byDistance = (list) => [...list].sort((a, b) => distance(a) - distance(b));
+  const cost = (o) => {
+    const b = box(o);
+    return covered(b) * 1000 + (inOrder(b) ? 0 : 500) + (o.far && !leaderClear(leader(b)) ? 500 : 0) + distance(o);
+  };
+  const fallback = () =>
+    far.filter((o) => inside(box(o)) && freeOfText(box(o))).sort((a, b) => cost(a) - cost(b))[0] ?? far[0];
+  const toSpot = (o, penalty) => {
+    const b = box(o);
+    const spot = { x: dot.cx + o.dx, y: dot.cy + o.dy + 4, anchor: o.anchor, box: b, cy: dot.cy, cost: penalty + distance(o) };
+    if (o.far) spot.leader = leader(b);
+    return spot;
+  };
+  // every free spot, closest first, and the least bad one if none is free
+  return {
+    free: [...near.filter(clear), ...byDistance(far.filter(clear))].map((o) => toSpot(o, 0)),
+    fallback: () => toSpot(fallback(), cost(fallback()) + 10000),
+  };
+}
+
+// the names go in one after another, but a greedy pick can block a later name. with
+// only a handful of names every combination of the closest free spots can be tried
+function searchNames(items, dots, texts, w, floor) {
+  const TRIES = 40;
+  let budget = 50000;
+  // the name with the fewest free spots goes first, it has the least room to give way
+  const order = items.map((it, i) => ({ ...it, i, room: placeName(it.label, it.d, dots, texts, [], w, floor).free.length }))
+    .sort((a, b) => a.room - b.room);
+  let best = null;
+  const search = (k, placed, total) => {
+    if (--budget < 0 || (best && total >= best.total)) return;
+    if (k === order.length) {
+      best = { total, spots: [...placed] };
+      return;
+    }
+    const { label, d } = order[k];
+    const { free } = placeName(label, d, dots, texts, placed, w, floor);
+    for (const spot of free.slice(0, TRIES)) {
+      placed.push(spot);
+      search(k + 1, placed, total + spot.cost);
+      placed.pop();
+    }
+  };
+  search(0, [], 0);
+  if (!best) return null;
+  const spots = [];
+  order.forEach((o, k) => { spots[o.i] = best.spots[k]; });
+  return { spots, total: best.total };
+}
+
+// if the names cannot all sit cleanly, one is left out. its dot keeps the tooltip and
+// the table row, which is better than a name over a dot or a crossed line
+function placeNames(items, dots, texts, w, floor) {
+  const all = searchNames(items, dots, texts, w, floor);
+  if (all) return all.spots;
+  let best = null;
+  items.forEach((_, skip) => {
+    const rest = items.filter((__, i) => i !== skip);
+    const found = searchNames(rest, dots, texts, w, floor);
+    if (found && (!best || found.total < best.total)) {
+      best = { total: found.total, spots: items.map((__, i) => (i === skip ? null : found.spots[i < skip ? i : i - 1])) };
+    }
+  });
+  return best ? best.spots : items.map(() => null);
 }
 
 function drawScatter(host, entries, names) {
@@ -156,21 +302,29 @@ function drawScatter(host, entries, names) {
   const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, role: "img",
     "aria-label": "Points from the juries against points from the public for every song in a final since 2016" });
 
-  // quiet horizontal grid, the zero line one step stronger, values inside the right edge
+  // every text already in the plot reserves its box, the names keep clear of them
+  const taken = [];
+  const write = (cls, px, py, text, anchor = "start") => {
+    svg.append(el("text", { class: cls, x: px, y: py, "text-anchor": anchor }, text));
+    taken.push(textBox(px, py, text, anchor));
+  };
+
+  // quiet horizontal grid, the zero line one step stronger, values inside the right edge,
+  // the highest value stays unlabelled like in halbat
   for (const v of ticks) {
     svg.append(el("line", { class: v === 0 ? "base" : "grid", x1: 0, x2: w, y1: y(v), y2: y(v) }));
-    if (v > 0) svg.append(el("text", { class: "axis", x: w, y: y(v) - 5, "text-anchor": "end" }, nf(v)));
+    if (v > 0 && v < top) write("axis", w, y(v) - 5, nf(v), "end");
   }
   // the y title sits over its own numbers
-  svg.append(el("text", { class: "axis", x: w, y: 12, "text-anchor": "end" }, "Points from the public"));
+  write("axis", w, 12, "Points from the public", "end");
 
   // the line where both agree, the two halves named between the grid lines
   const between = (k) => y(step * (k + 0.5)) + 4;
   svg.append(el("line", { class: "eq", x1: x(0), y1: y(0), x2: x(top), y2: y(top) }));
   const sameAt = step * (ticks.length - 2.5);
-  svg.append(el("text", { class: "note", x: x(sameAt) - 10, y: between(ticks.length - 3), "text-anchor": "end" }, "same score"));
-  svg.append(el("text", { class: "note", x: x(0) + 4, y: between(ticks.length - 2) }, "Public liked it more"));
-  svg.append(el("text", { class: "note", x: x(top), y: between(0), "text-anchor": "end" }, "Juries liked it more"));
+  write("note", x(sameAt) - 10, between(ticks.length - 3), "same score", "end");
+  write("note", x(0) + 4, between(ticks.length - 2), "Public liked it more");
+  write("note", x(top), between(1), "Juries liked it more", "end");
 
   // every song as a hollow grey ring, keyboard steps along the jury axis
   const ordered = [...entries].sort((a, b) => a.jury - b.jury || a.televote - b.televote);
@@ -180,6 +334,7 @@ function drawScatter(host, entries, names) {
     const named = far.has(e);
     const g = el("g", {
       class: named ? "mark named" : "mark",
+      "data-key": e.country + e.year,
       role: "img",
       tabindex: i === 0 ? 0 : -1,
       "data-i": i,
@@ -191,18 +346,23 @@ function drawScatter(host, entries, names) {
     svg.append(g);
   });
 
-  // names of the far ones, placed where they hide nothing
-  const taken = [];
-  for (const d of dots.filter((dd) => far.has(dd.e))) {
-    const label = `${names[d.e.country]} ${d.e.year}`;
-    const spot = placeName(label, d, dots, taken, w);
-    svg.append(el("text", { class: "name", x: spot.x, y: spot.y, "text-anchor": spot.anchor }, label));
+  // names of the far ones, placed where they hide nothing, top dot first
+  const items = dots.filter((dd) => far.has(dd.e)).sort((a, b) => a.cy - b.cy)
+    .map((d) => ({ d, label: `${names[d.e.country]} ${d.e.year}` }));
+  const spots = placeNames(items, dots, taken, w, y(0));
+  for (const [i, { d, label }] of items.entries()) {
+    const spot = spots[i];
+    if (!spot) continue;
+    if (spot.leader) {
+      const [x1, y1, x2, y2] = spot.leader;
+      svg.append(el("line", { class: "leader", x1, y1, x2, y2, "data-for": d.e.country + d.e.year }));
+    }
+    svg.append(el("text", { class: "name", x: spot.x, y: spot.y, "text-anchor": spot.anchor, "data-for": d.e.country + d.e.year }, label));
   }
 
-  // x values under the zero line, first left and last right aligned
-  ticks.forEach((v, i) => {
-    const anchor = i === 0 ? "start" : i === ticks.length - 1 ? "end" : "middle";
-    svg.append(el("text", { class: "axis", x: i === ticks.length - 1 ? w : x(v), y: TOP + plot + 18, "text-anchor": anchor }, nf(v)));
+  // x values under the zero line, the first left aligned, the highest unlabelled
+  ticks.slice(0, -1).forEach((v, i) => {
+    svg.append(el("text", { class: "axis", x: x(v), y: TOP + plot + 18, "text-anchor": i === 0 ? "start" : "middle" }, nf(v)));
   });
   svg.append(el("text", { class: "axis", x: w, y: TOP + plot + 38, "text-anchor": "end" }, "Points from the juries"));
 
@@ -245,7 +405,7 @@ function rankTable(id, rows, label, empty, first = "Pair") {
     return;
   }
   const head = `<tr><th scope="col">${first}</th><th scope="col" class="num">Finals</th>` +
-    '<th scope="col" class="num">Points above song</th></tr>';
+    '<th scope="col" class="num">Above song</th></tr>';
   const body = rows
     .map((r) =>
       `<tr><th scope="row">${escape(label(r))}</th><td class="num leise">${r.meetings}</td>` +

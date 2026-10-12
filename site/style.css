@@ -19,6 +19,7 @@
   --fs-read: 17px; --fs-read-lead: 19px; --fs-read-title: 32px;
   --r-ctl: 6px; --r-float: 12px; --r-round: 999px;
   --h-ctl: 32px; --h-leiste: 48px;
+  --spalte: 680px; --spalte-breit: 920px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,7 +73,7 @@ sup a.fn { color: var(--akz); text-decoration: none; font-weight: 500; }
 .kopf a:hover { color: var(--akz); }
 
 /* reading column */
-main { max-width: 640px; margin: 0 auto; padding: 32px 16px 32px; }
+main { max-width: calc(var(--spalte) + 32px); margin: 0 auto; padding: 32px 16px 32px; }
 h1 {
   font-size: var(--fs-read-title);
   font-weight: 600;
@@ -82,7 +83,7 @@ h1 {
   text-wrap: balance;
 }
 .meta { color: var(--muted); font-size: var(--fs-meta); margin: 0 0 32px; }
-h2 { font-size: var(--fs-read-lead); font-weight: 600; margin: 32px 0 12px; }
+h2 { font-size: var(--fs-body); font-weight: 600; margin: 32px 0 12px; }
 h3 { font-size: var(--fs-body); font-weight: 600; margin: 0 0 8px; }
 p { font-size: var(--fs-read); line-height: 1.65; color: var(--text); margin: 0 0 16px; }
 p.lead { font-size: var(--fs-read-lead); color: var(--fg); }
@@ -105,6 +106,7 @@ figure { margin: 16px 0 24px; }
 .plot .axis { fill: var(--muted); }
 .plot .note { fill: var(--faint); }
 .plot .name { fill: var(--text); font-weight: 500; }
+.plot .leader { stroke: var(--muted); stroke-width: 1; }
 /* a halo in page colour keeps chart text readable over grid lines and rings */
 .plot .note, .plot .name, .plot .axis { paint-order: stroke; stroke: var(--app); stroke-width: 4px; stroke-linejoin: round; }
 .plot .ring { fill: none; stroke: var(--ctx); stroke-width: 1.25; stroke-opacity: .6; }
@@ -127,7 +129,7 @@ figure { margin: 16px 0 24px; }
 /* the one number, like halbat's kpi cards */
 .kennzahl { display: flex; flex-direction: column; gap: 4px; margin: 8px 0 16px; }
 .kennzahl b {
-  font-size: var(--fs-read-title); font-weight: 600; line-height: 1.15;
+  font-size: var(--fs-title); font-weight: 600; line-height: 1.15;
   letter-spacing: -0.015em; font-variant-numeric: tabular-nums;
 }
 .kennzahl > span { font-size: var(--fs-meta); color: var(--muted); }
@@ -181,10 +183,16 @@ table.rang { width: 100%; table-layout: fixed; }
 table.rang th:first-child { width: auto; }
 table.rang th[scope="row"] { padding-right: 12px; }
 table.rang .num { white-space: nowrap; }
-table.rang td.num:nth-child(2) { width: 4em; }
-table.rang td.num:last-child { width: 4em; }
-table.rang th.num:last-child { width: 5.5em; white-space: normal; line-height: 1.3; }
-table.rang th.num:nth-child(2) { width: 3.5em; }
+table.rang th { white-space: nowrap; }
+table.rang .num { width: 5em; }
+/* side by side the two lists get more room than the reading column */
+/* the two lists stack in the column, side by side only where the wide step fits:
+   same left edge as the column, wider to the right like halbat's .ar-wide */
+.zwei.rang-paar { grid-template-columns: 1fr; }
+@media (min-width: 1200px) {
+  .breitstufe { width: var(--spalte-breit); }
+  .zwei.rang-paar { grid-template-columns: 1fr 1fr; }
+}
 .rang-paar h3 { margin-bottom: 4px; }
 .tabs.nur-handy { display: none; }
 @media (max-width: 560px) {
