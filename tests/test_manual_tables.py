@@ -58,6 +58,14 @@ def test_contest_dates_cover_the_panel_years():
     assert 2020 not in years
 
 
+def test_country_names_have_one_name_per_country():
+    names = manual._read("country_names")
+    assert not names["iso3"].duplicated().any()
+    assert names["iso3"].str.len().eq(3).all()
+    assert names["name"].notna().all()
+    assert not names["name"].duplicated().any()
+
+
 def test_recent_entries_only_ships_the_placeholder():
     df = manual._read("recent_entries")
     assert (df["country_iso3"] == manual.PLACEHOLDER_ISO3).all()

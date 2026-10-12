@@ -72,6 +72,16 @@ def parse_contest_dates() -> Path:
     return io.write_parquet(out, "contest_dates", "interim")
 
 
+def parse_country_names() -> Path:
+    """one display name per country, the sources spell them several ways"""
+    df = _read("country_names")
+    if df["iso3"].duplicated().any():
+        raise ValueError("country_names has an iso3 twice")
+    out = enforce(df, "country_names")
+    print(f"[parse.manual] country_names: {len(out)} countries")
+    return io.write_parquet(out, "country_names", "interim")
+
+
 def parse_recent_entries() -> Path:
     """entries typed in by hand for the years after the upstream release"""
     df = _read("recent_entries")
@@ -106,5 +116,6 @@ def parse() -> list[Path]:
         parse_country_map(),
         parse_voting_regimes(),
         parse_contest_dates(),
+        parse_country_names(),
         parse_recent_entries(),
     ]

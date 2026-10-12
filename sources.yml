@@ -139,6 +139,19 @@ sources:
       needed to place the google trends window, which ends the day before the
       final
 
+  - id: manual_country_names
+    name: one english display name per country
+    url: data/manual/country_names.csv
+    kind: manual
+    license: CC0 1.0
+    citation: this project
+    retrieved_at: null
+    sha256: null
+    notes: >-
+      the sources spell countries several ways (czech republic and czechia,
+      one label even reads north macedonian.macedonia), figures and the site
+      need one name
+
   - id: manual_recent_entries
     name: entries after the upstream datasets end
     url: data/manual/recent_entries.csv

@@ -16,6 +16,7 @@ RAW = DATA / "raw"
 INTERIM = DATA / "interim"
 PROCESSED = DATA / "processed"
 MANUAL = DATA / "manual"
+EXPORT = DATA / "export"
 CACHE = ROOT / "cache"
 
 SOURCES_YML = ROOT / "sources.yml"

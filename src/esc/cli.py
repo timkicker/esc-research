@@ -24,6 +24,12 @@ def _all() -> None:
         step()
 
 
+def _export() -> None:
+    from esc import export
+
+    export.main()
+
+
 def _tool(*args: str) -> None:
     code = subprocess.call([sys.executable, "-m", *args], cwd=config.ROOT)
     if code:
@@ -51,11 +57,14 @@ COMMANDS = {
     "build": (pipeline.build, "the pair table in data/processed"),
     "model": (_model, "forecast and explain, every year tested unseen"),
     "all": (_all, "data, parse, build and model in a row"),
+    "export": (_export, "csv and site json into data/export"),
     "test": (_test, "run the tests"),
     "lint": (_lint, "ruff check and format check"),
     "clean": (lambda: _remove(config.INTERIM), "delete data/interim"),
     "clean-all": (
-        lambda: _remove(config.RAW, config.INTERIM, config.PROCESSED, config.CACHE),
+        lambda: _remove(
+            config.RAW, config.INTERIM, config.PROCESSED, config.CACHE, config.EXPORT
+        ),
         "delete everything that was downloaded or built",
     ),
 }

@@ -66,6 +66,10 @@ SCHEMA: dict[str, dict[str, str]] = {
         "year": "int16",
         "final_date": "datetime64[ns]",
     },
+    "country_names": {
+        "iso3": "string",
+        "name": "string",
+    },
     "artists": {
         "entry_id": "string",
         "artist_age": "Int16",

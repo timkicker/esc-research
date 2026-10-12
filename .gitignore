@@ -2,6 +2,7 @@
 data/raw/
 data/interim/
 data/processed/
+data/export/
 
 # hand curated tables are the exception
 !data/manual/
