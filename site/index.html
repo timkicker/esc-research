@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Song or neighbours? Eurovision votes 2016 to 2026</title>
+  <meta name="description" content="How much of a Eurovision vote is the song and how much is the relationship between two countries, for the juries and for the public.">
+  <link rel="stylesheet" href="style.css">
+  <script src="vendor/chart.umd.min.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="kopf">
+    <a href="/">tim kicker</a>
+    <a href="/projects/">Projects</a>
+  </header>
+
+  <main>
+    <h1>Song or neighbours?</h1>
+    <p class="meta">Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker<br>
+      Introduction to Data Science, University of Helsinki, October 2026</p>
+
+    <p class="lead">Since 2016 Cyprus has made it to the Eurovision final eight times.
+      Every single time, the Greek public gave it twelve points<sup><a class="fn" href="#q1">1</a></sup>.
+      Was that the song or was that Greece?</p>
+
+    <p>We went through every vote in the ten finals from 2016 to 2026 and kept the jury
+      and the public apart. For each vote we asked how much of it the song explains and
+      how much the relationship between the two countries.</p>
+
+    <h2>The neighbours matter more to the public</h2>
+
+    <p>To measure the song we look at how well it did with everybody else. To measure the
+      relationship we look at how close the two countries are (distance, a shared border
+      or language) and how they voted for each other in earlier years.</p>
+
+    <figure>
+      <div class="diagramm"><canvas id="split" role="img"
+        aria-label="Share of the differences in points explained by the song and by the two countries, juries against public"></canvas></div>
+      <figcaption>Share of the differences in points we can predict, on contests the model never saw.</figcaption>
+      <details class="tabelle">
+        <summary>Show as table</summary>
+        <table id="split-tabelle"></table>
+      </details>
+    </figure>
+
+    <p>Knowing only the song, we can predict <span class="num" data-split="televote.entry_only">40</span> percent
+      of the differences in what the public gives. Knowing only the two countries adds
+      <span class="num" data-split="televote.pair_only">12</span> percent. For the juries the same numbers are
+      <span class="num" data-split="jury.entry_only">25</span> and
+      <span class="num" data-split="jury.pair_only">3</span> percent, so the neighbours count about four times
+      as much for the public as they do for the juries.</p>
+
+    <section class="quellen">
+      <h2>Sources</h2>
+      <ol>
+        <li id="q1">Cyprus was in the final in 2016, 2017, 2018, 2019, 2021, 2023, 2024 and 2026, with
+          12 points from the Greek televote each time. Results up to 2023 from
+          J. Spijkervet, The Eurovision Song Contest Dataset, Zenodo, 2020,
+          <a href="https://doi.org/10.5281/zenodo.4036457">doi:10.5281/zenodo.4036457</a>.
+          From 2024 on from <a href="https://eurovisionworld.com/">eurovisionworld.com</a>.</li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>

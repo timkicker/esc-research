@@ -6,6 +6,7 @@ uv run esc export, writes data/export/csv/ and data/export/site/
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import pandas as pd
@@ -14,6 +15,7 @@ from esc import config, io
 from esc.models.explain import MIN_MEETINGS
 
 EXPORT = config.EXPORT
+SITE_DATA = config.ROOT / "site" / "data"
 VOTE_CODE = {"jury": "j", "televote": "t"}
 SHARES = ["entry_only", "pair_only", "overlap", "noise"]
 HEADLINE_MODEL = "ridge"
@@ -204,6 +206,10 @@ def main() -> list[Path]:
         "affinity": affinity(pairs),
     }
     written = [_write_json(name, payload) for name, payload in payloads.items()]
+    # the site folder has to stand on its own, so it carries a copy of its data
+    SITE_DATA.mkdir(parents=True, exist_ok=True)
+    for path in list(written):
+        written.append(Path(shutil.copy2(path, SITE_DATA / path.name)))
     tables = latex_tables(payloads, payloads["meta"]["countries"])
     written += [_write_latex(name, frame) for name, frame in tables.items()]
     written += [
