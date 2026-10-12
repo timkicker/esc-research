@@ -6,7 +6,6 @@
   <title>Song or neighbours? Eurovision votes 2016 to 2026</title>
   <meta name="description" content="How much of a Eurovision vote is the song and how much is the relationship between two countries, for the juries and for the public.">
   <link rel="stylesheet" href="style.css">
-  <script src="vendor/chart.umd.min.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -29,16 +28,10 @@
       how much the relationship between the two countries.</p>
 
     <h2>Juries and the public disagree</h2>
-
-    <p>Each dot is one song in a final. The further a dot sits from the line, the more the
-      juries and the public disagreed about it. Israel in 2024 got 52 points from the juries
-      and 323 from the public. Switzerland in 2025 got 214 from the juries and none at all
-      from the public.</p>
+    <p>Every dot is one song in a final since 2016.</p>
 
     <figure>
-      <div class="diagramm quadrat"><canvas id="streuung" role="img"
-        aria-label="Points from the juries against points from the public for every song in a final since 2016"></canvas></div>
-      <figcaption>Every song in a final from 2016 to 2026, 257 in total.</figcaption>
+      <div class="plot" id="streuung"></div>
       <details class="tabelle">
         <summary>Show as table</summary>
         <div class="rollbar"><table id="streuung-tabelle"></table></div>
@@ -47,35 +40,30 @@
 
     <h2>The neighbours matter more to the public</h2>
 
-    <p>To measure the song we look at how well it did with everybody else. To measure the
-      relationship we look at how close the two countries are (distance, a shared border
-      or language) and how they voted for each other in earlier years.</p>
+    <div class="kennzahl">
+      <b>About 4&times;</b>
+      <span>weight of the two countries for the public against the juries
+        <details class="info">
+          <summary aria-label="How this is measured">i</summary>
+          <p>For the song we look at how well it did with everybody else. For the two
+            countries we look at how close they are (distance, a shared border or
+            language) and how they voted for each other in earlier years. The shares say
+            how much of the differences in points each part predicts, always on finals
+            the model never saw. Depending on the model the two countries count 4.2 to 4.5
+            times as much for the public.</p>
+        </details>
+      </span>
+    </div>
 
-    <figure>
-      <div class="diagramm"><canvas id="split" role="img"
-        aria-label="Share of the differences in points explained by the song and by the two countries, juries against public"></canvas></div>
-      <figcaption>Share of the differences in points we can predict, on contests the model never saw.</figcaption>
-      <details class="tabelle">
-        <summary>Show as table</summary>
-        <table id="split-tabelle"></table>
-      </details>
-    </figure>
-
-    <p>Knowing only the song, we can predict <span class="num" data-split="televote.entry_only">40</span> percent
-      of the differences in what the public gives. Knowing only the two countries adds
-      <span class="num" data-split="televote.pair_only">12</span> percent. For the juries the same numbers are
-      <span class="num" data-split="jury.entry_only">25</span> and
-      <span class="num" data-split="jury.pair_only">3</span> percent, so the neighbours count about four times
-      as much for the public as they do for the juries.</p>
+    <table class="vier" id="split-tabelle"></table>
 
     <h2>Who favours whom</h2>
 
     <p>For every pair of countries we compare the points one gave the other with what the
       song got from everybody else. The difference, averaged over all finals the two
-      countries shared, shows who favours whom. We only list pairs that met in at least
-      three finals.</p>
+      countries shared, shows who favours whom.</p>
 
-    <div class="zwei">
+    <div class="zwei untereinander">
       <section>
         <h3>Public</h3>
         <ol class="rang" id="liebling-t"></ol>
@@ -92,9 +80,6 @@
 
     <h2 id="explorer">Look up your country</h2>
 
-    <p>Pick a year and a country to see who it gave points to or who gave points to it.
-      Below that are its favourites over all ten finals.</p>
-
     <div class="steuerung">
       <label>Year
         <select id="wahl-jahr"></select>
@@ -102,21 +87,17 @@
       <label>Country
         <select id="wahl-land"></select>
       </label>
-      <div class="schalter" role="group" aria-label="Direction">
-        <button type="button" id="richtung-gab" aria-pressed="true">Gave</button>
-        <button type="button" id="richtung-bekam" aria-pressed="false">Got</button>
-      </div>
     </div>
 
-    <figure>
+    <div class="tabs" role="tablist" aria-label="Direction">
+      <button type="button" role="tab" id="richtung-gab" aria-selected="true" aria-controls="tafel">Gave</button>
+      <button type="button" role="tab" id="richtung-bekam" aria-selected="false" aria-controls="tafel">Got</button>
+    </div>
+
+    <div id="tafel" role="tabpanel">
       <p class="meta" id="explorer-hinweis" hidden></p>
-      <div class="diagramm" id="explorer-flaeche"><canvas id="explorer-diagramm" role="img"
-        aria-label="Points between the chosen country and the others in the chosen year, juries and public"></canvas></div>
-      <details class="tabelle">
-        <summary>Show as table</summary>
-        <table id="explorer-tabelle"></table>
-      </details>
-    </figure>
+      <table class="tafel" id="explorer-tabelle"></table>
+    </div>
 
     <div class="zwei">
       <section>
@@ -128,8 +109,6 @@
         <ol class="rang" id="fav-bekommt"></ol>
       </section>
     </div>
-    <p class="meta">Public vote, points beyond what the song earned, pairs with at least
-      three finals together.</p>
 
     <h2>Who this is for</h2>
 
