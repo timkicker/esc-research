@@ -81,12 +81,16 @@
     <h2 id="explorer">Look up your country</h2>
 
     <div class="steuerung">
-      <label>Year
-        <select id="wahl-jahr"></select>
-      </label>
-      <label>Country
-        <select id="wahl-land"></select>
-      </label>
+      <div class="feld">
+        <span class="feld-name" id="name-jahr">Year</span>
+        <div class="menue" id="menue-jahr"></div>
+        <select class="nativ" id="wahl-jahr" aria-labelledby="name-jahr"></select>
+      </div>
+      <div class="feld">
+        <span class="feld-name" id="name-land">Country</span>
+        <div class="menue" id="menue-land"></div>
+        <select class="nativ" id="wahl-land" aria-labelledby="name-land"></select>
+      </div>
     </div>
 
     <div class="tabs" role="tablist" aria-label="Direction">

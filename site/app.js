@@ -136,8 +136,9 @@ function drawScatter(host, entries, names) {
   // the line where both agree, and the two halves it splits
   svg.append(el("line", { class: "eq", x1: x(0), y1: y(0), x2: x(top), y2: y(top) }));
   svg.append(el("text", { class: "note", x: x(top * 0.8) - 12, y: y(top * 0.8), "text-anchor": "end" }, "same score"));
-  svg.append(el("text", { class: "note", x: x(0) + 4, y: y(top * 0.9) }, "Public liked it more"));
-  svg.append(el("text", { class: "note", x: w - 4, y: y(top * 0.3), "text-anchor": "end" }, "Juries liked it more"));
+  // both halves named inside their empty corners, away from the axis titles
+  svg.append(el("text", { class: "note", x: x(top * 0.1), y: y(top * 0.8) }, "Public liked it more"));
+  svg.append(el("text", { class: "note", x: w - 4, y: y(top * 0.14), "text-anchor": "end" }, "Juries liked it more"));
 
   // every song as a hollow grey ring, keyboard steps along the jury axis
   const ordered = [...entries].sort((a, b) => a.jury - b.jury || a.televote - b.televote);
@@ -221,6 +222,106 @@ function topPairs(affinity, names, count = 8) {
   }
 }
 
+/* ---------- a select-only combobox, the aria pattern for a listbox behind a button ---------- */
+
+function menu(host, labelId, options, initial, onPick) {
+  const id = host.id;
+  let value = initial;
+  let active = 0;
+  let typed = "";
+  let typedAt = 0;
+
+  host.innerHTML =
+    `<button type="button" class="menue-knopf" role="combobox" aria-haspopup="listbox" aria-expanded="false" ` +
+    `aria-controls="${id}-liste" aria-labelledby="${labelId} ${id}-wert">` +
+    `<span id="${id}-wert"></span>` +
+    '<svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button>' +
+    `<ul class="menue-liste" role="listbox" id="${id}-liste" aria-labelledby="${labelId}" tabindex="-1" hidden>` +
+    options
+      .map((o, i) =>
+        `<li role="option" id="${id}-o${i}" data-value="${escape(o.value)}" aria-selected="false">` +
+        '<svg class="haken" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>' +
+        `${escape(o.label)}</li>`)
+      .join("") +
+    "</ul>";
+
+  const button = host.querySelector("button");
+  const list = host.querySelector("ul");
+  const items = [...list.children];
+  const index = (v) => options.findIndex((o) => String(o.value) === String(v));
+
+  const paint = () => {
+    host.querySelector(`#${id}-wert`).textContent = options[index(value)].label;
+    items.forEach((li, i) => {
+      li.setAttribute("aria-selected", String(String(options[i].value) === String(value)));
+      li.classList.toggle("aktiv", i === active);
+    });
+    button.setAttribute("aria-activedescendant", list.hidden ? "" : `${id}-o${active}`);
+  };
+  const open = () => {
+    active = Math.max(0, index(value));
+    list.hidden = false;
+    button.setAttribute("aria-expanded", "true");
+    paint();
+    // the chosen row in the middle, so its neighbours show above and below
+    const row = items[active];
+    list.scrollTop = row.offsetTop - list.clientHeight / 2 + row.offsetHeight / 2;
+  };
+  const close = () => {
+    list.hidden = true;
+    button.setAttribute("aria-expanded", "false");
+    paint();
+  };
+  const move = (i) => {
+    active = Math.max(0, Math.min(options.length - 1, i));
+    paint();
+    items[active].scrollIntoView({ block: "nearest" });
+  };
+  const pick = (i) => {
+    value = options[i].value;
+    close();
+    button.focus();
+    onPick(value);
+  };
+
+  button.addEventListener("click", () => (list.hidden ? open() : close()));
+  button.addEventListener("keydown", (e) => {
+    const shut = list.hidden;
+    if (shut && ["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) { e.preventDefault(); open(); return; }
+    if (shut) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); move(active + 1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); move(active - 1); }
+    else if (e.key === "Home") { e.preventDefault(); move(0); }
+    else if (e.key === "End") { e.preventDefault(); move(options.length - 1); }
+    else if (e.key === "PageDown") { e.preventDefault(); move(active + 8); }
+    else if (e.key === "PageUp") { e.preventDefault(); move(active - 8); }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(active); }
+    else if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "Tab") close();
+    else if (e.key.length === 1 && /\S/.test(e.key)) {
+      // typing jumps to the first label that starts with what was typed
+      const now = Date.now();
+      typed = now - typedAt > 700 ? e.key.toLowerCase() : typed + e.key.toLowerCase();
+      typedAt = now;
+      const hit = options.findIndex((o) => String(o.label).toLowerCase().startsWith(typed));
+      if (hit >= 0) move(hit);
+    }
+  });
+  list.addEventListener("pointerdown", (e) => e.preventDefault());
+  list.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (li) pick(items.indexOf(li));
+  });
+  list.addEventListener("pointermove", (e) => {
+    const li = e.target.closest("li");
+    if (li && items.indexOf(li) !== active) { active = items.indexOf(li); paint(); }
+  });
+  document.addEventListener("pointerdown", (e) => { if (!host.contains(e.target) && !list.hidden) close(); });
+  button.addEventListener("blur", () => { if (!list.hidden) close(); });
+  paint();
+  return { set: (v) => { value = v; paint(); } };
+}
+
 /* ---------- the explorer ---------- */
 
 function explorerRows(votes, state) {
@@ -286,8 +387,17 @@ function setupExplorer(meta, votes, affinity) {
     tabs.got.tabIndex = state.gave ? -1 : 0;
   };
 
-  yearSelect.addEventListener("change", () => { state.year = Number(yearSelect.value); draw(); });
-  countrySelect.addEventListener("change", () => { state.country = countrySelect.value; draw(); });
+  // own menus on wide screens, the native selects on phones, both kept in step
+  const years = [...meta.years].reverse().map((y) => ({ value: y, label: String(y) }));
+  const lands = countries.map((c) => ({ value: c, label: names[c] }));
+  const yearMenu = menu(document.getElementById("menue-jahr"), "name-jahr", years, state.year, (v) => {
+    state.year = Number(v); yearSelect.value = String(v); draw();
+  });
+  const landMenu = menu(document.getElementById("menue-land"), "name-land", lands, state.country, (v) => {
+    state.country = v; countrySelect.value = v; draw();
+  });
+  yearSelect.addEventListener("change", () => { state.year = Number(yearSelect.value); yearMenu.set(state.year); draw(); });
+  countrySelect.addEventListener("change", () => { state.country = countrySelect.value; landMenu.set(state.country); draw(); });
   tabs.gave.addEventListener("click", () => { state.gave = true; draw(); });
   tabs.got.addEventListener("click", () => { state.gave = false; draw(); });
   // arrow keys move between the two tabs
