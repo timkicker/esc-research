@@ -1,0 +1,45 @@
+% appendix for the report, not included yet. paste before \end{document} once Tim agrees
+\section*{Appendix: features and settings}
+
+\small
+\textbf{Panel.}
+One row per voter, receiver, year and vote type (jury or public) in the final, 19\,800 rows.
+A pair that gave nothing keeps zero points, because only the top ten score and dropping the zeros would leave a panel of successes.
+Self votes are dropped.
+The pooled rest-of-the-world public vote is a voter without geography and is left out of the pair statistics.
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+Feature & Meaning\\
+\midrule
+\texttt{log\_dist} & log of the distance between the two countries (CEPII)\\
+\texttt{contig}, \texttt{smctry} & shared border, same country (CEPII)\\
+\texttt{comlang\_off}, \texttt{comlang\_ethno} & shared official or ethnic language (CEPII)\\
+\texttt{colony}, \texttt{comcol} & colonial tie, common colonizer (CEPII)\\
+\texttt{past\_points}, \texttt{past\_meetings} & mean points the voter gave the receiver in earlier finals, number of earlier finals\\
+\texttt{web\_interest}, \texttt{youtube\_interest} & Google Trends interest for the entry in the voting country, cut the day before the final\\
+\texttt{running\_position} & running order scaled to $[0,1]$\\
+lyrics & sentiment, theme, repetition in verse and chorus (automatic analysis)\\
+\texttt{receiver\_effect} & mean of what all other voters gave the same entry, explanatory only\\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{Feature sets.}
+\emph{pair} uses the first nine features.
+The others add the lyrics, the running order, the two Trends series or both.
+Sets containing the receiver effect are labelled explanatory and never reported as forecasts.
+
+\textbf{Models.}
+Ridge regression with the penalty chosen from 13 values between $10^{-3}$ and $10^{3}$ by the built-in leave-one-out cross-validation on the training rows.
+Gradient boosting (histogram based) with depth 4, learning rate 0.06 and 300 iterations. The decomposition uses a minimum leaf size of 200.
+Random forest with 200 trees, minimum leaf size 20 and half of the features per split.
+Missing values are filled with the training-year median.
+All seeds are fixed (20260501 for the baseline, 0 for the models).
+
+\textbf{Validation.}
+Each year is held out whole.
+The model is fitted on the pair rows of the other nine finals and predicts the pair rows of the held-out final.
+The predicted points are summed per entry and turned into places that are compared with the actual places of the final.
+The rank error is the mean absolute difference between the predicted and the actual place, averaged over finals.
+The chance baseline shuffles the actual places within each final 1\,000 times; its mean is 8.5 for the jury and 8.4 for the public.

@@ -41,5 +41,10 @@ talks/**/*.out
 talks/**/*.fls
 talks/**/*.fdb_latexmk
 talks/**/erklaer.md
+report/*.aux
+report/*.log
+report/*.out
+report/*.fls
+report/*.fdb_latexmk
 site/data/
 

@@ -1,0 +1,266 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\titleformat{\section}{\normalsize\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.45em}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+\title{\vspace{-1.2cm}\textbf{Song or neighbours? Splitting the Eurovision vote\\ into the entry and the relationship between two countries}}
+\author{Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker\\
+\small Introduction to Data Science, University of Helsinki, October 2026}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.2em}
+
+\begin{abstract}\small
+\noindent
+In the Eurovision final every country gives points to the others and since 2016 the jury and the public are counted separately.
+We ask how much of a single country-to-country vote is explained by the entry itself and how much by the relationship between the two countries. We also ask whether this differs between jury and public.
+On finals the models have never seen, the entry alone explains 24.9\,\% of a jury vote and 40.3\,\% of a public vote.
+The relationship alone explains 2.8\,\% and 12.5\,\%, so it counts about four times as much for the public.
+\end{abstract}
+
+\section{Question and data}
+
+The unit of analysis is the directed country pair: country $A$ gives points to country $B$ in year $Y$, separately for jury and public.
+The ten finals from 2016 to 2026 (2020 was cancelled) hold 19\,800 such votes, about eighty times as many rows as the 260 entries they are made of.
+That is what makes the country effects estimable at all.
+Published work on voting bias uses the combined points; we know of no analysis that separates jury and public since the rules changed in 2016.
+The reference for forecasting is Adamska and Reiss (2025), who report an average rank error of 6.07 for the total score from audio, lyrics and YouTube views, against 8.55 for chance.
+
+\textbf{Sources.}
+Results up to 2023 come from the Spijkervet Eurovision Song Contest Dataset (Zenodo, doi:10.5281/zenodo.4036457).
+For 2024 to 2026 we read the voting scripts that eurovisionworld.com loads for each results page; they contain every jury and public point as JSON so no browser is needed.
+Distance, shared border, shared language and colonial ties come from CEPII GeoDist (Etalab 2.0).
+Google Trends interest per voting country (cut the day before the final) and an automatic analysis of the lyrics come from the teammate repository \texttt{ezvezdov/eurovision-dataset}.
+Every download is pinned by checksum in \texttt{sources.yml} and the run writes its own provenance file.
+
+\textbf{Features.}
+The pair features are log distance, border, official and ethnic common language, colony, common colonizer, same country and the mean points the voter gave the receiver in earlier finals together with the number of earlier meetings.
+Attention is the Google Trends web and YouTube interest of the entry in the voting country.
+Entry level features are the lyrics (sentiment, theme, repetition) and the running order.
+The receiver effect is the mean of what all other countries gave the same entry, which stands for the song and also leaks the result.
+It is therefore used only in the explanatory model and never in a forecast.
+
+\section{Method}
+
+\textbf{Validation.}
+Everything is leave-one-year-out: the model is fitted on nine finals and scored on the tenth. Anything learned from data, including the imputation median, comes from the training years only.
+A random split would leak within a year.
+A test checks that changing the points of one year leaves the prediction for that year unchanged.
+
+\textbf{Decomposition.}
+For each vote type we fit three models on the pair-level points: the entry only (the receiver effect), the relationship only (the pair features) and both.
+With $R^2$ measured on the unseen year, the share explained by the entry alone is $R^2_{\text{both}}-R^2_{\text{pair}}$ and by the relationship alone $R^2_{\text{both}}-R^2_{\text{entry}}$.
+The overlap is $R^2_{\text{entry}}+R^2_{\text{pair}}-R^2_{\text{both}}$ and the rest is noise.
+The headline uses ridge regression.
+Boosting with a large minimum leaf size serves as a check, because default boosting learns a sawtooth from the receiver effect, which leaves out the voter and so differs slightly for each voter of one entry.
+
+\textbf{Affinity.}
+For each directed pair we average the residual of the entry-only fit over all finals the two countries shared.
+This is the points one gave the other beyond what the entry earned elsewhere.
+We list only pairs with at least three meetings.
+
+\textbf{Forecast.}
+We compare ridge, gradient boosting and random forest on five feature sets and score the rank error, the mean distance between the predicted and the actual place, against a chance baseline from simulation.
+Semi-final results are not used, since they are published only after the final.
+
+\section{Results}
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar, width=0.62\textwidth, height=4.6cm, bar width=6pt,
+  xmin=0, xmax=75, area legend, xlabel={share of a vote explained on unseen finals (\%)},
+  ytick={0,1,2,3}, yticklabels={noise,both,{the two countries},{the entry itself}},
+  y dir=normal, ymin=-0.6, ymax=3.6, enlarge y limits=false,
+  legend style={at={(1.02,0.5)},anchor=west,draw=none,font=\small},
+  tick label style={font=\small}, label style={font=\small},
+  xmajorgrids, major grid style={black!12},
+]
+\addplot[fill=black!70,draw=none,bar shift=-3.5pt] coordinates {(24.9,3) (2.8,2) (2.1,1) (70.3,0)};
+\addplot[fill=black!30,draw=none,bar shift=3.5pt] coordinates {(40.3,3) (12.5,2) (3.8,1) (43.4,0)};
+\legend{jury,public}
+\end{axis}
+\end{tikzpicture}
+\caption{Split of explained variance, ridge, ten finals pooled. ``Both'' is the overlap of the two parts. Source: \texttt{decomposition.parquet}.}
+\label{fig:split}
+\end{figure}
+
+\textbf{The relationship counts about four times as much for the public.}
+Figure~\ref{fig:split} shows the split.
+The ratio of the relationship share between public and jury is 4.5 with ridge and 4.2 with the coarse boosting check.
+Per year the relationship share ranges from 1.5 to 3.9\,\% for the jury and from 5.5 to 18\,\% for the public, so it is larger for the public in every single year.
+The entry share is probably too high and the relationship share too low, because the receiver effect also carries the bloc votes of all other countries.
+More than half of the variation stays unexplained for the jury (70.3\,\%) and 43.4\,\% for the public.
+The shares apply to the single vote between two countries and say nothing about who wins.
+
+\textbf{Jury and public measure different things.}
+Over the 257 entries, the jury and public totals correlate at 0.43 (Spearman).
+Israel 2024 received 52 points from the juries and 323 from the public.
+Switzerland 2025 received 214 from the juries and none from the public.
+A neighbour gets one in four of the public's twelve points (25.9\,\%, 396 votes) but only 14.8\,\% of the jury's (393 votes), although neighbours are 7.4\,\% of all pairs.
+
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.62\textwidth, height=0.62\textwidth, xmin=0, xmax=520, ymin=0, ymax=520,
+  xlabel={points from the juries}, ylabel={points from the public},
+  tick label style={font=\small}, label style={font=\small},
+  ymajorgrids, major grid style={black!12},
+]
+\addplot[only marks, mark=o, mark size=1.6pt, draw=black!55] table[col sep=comma,x=jury,y=televote] {../data/export/latex/scatter.csv};
+\addplot[dashed, black!40, no marks] coordinates {(0,0) (520,520)};
+\addplot[only marks, mark=*, mark size=2pt, black] table[col sep=comma,x=jury,y=televote] {../data/export/latex/scatter-named.csv};
+% label positions, the points themselves come from scatter-named.csv
+\node[font=\scriptsize,anchor=west] at (axis cs:60,323) {Israel 2024};
+\node[font=\scriptsize,anchor=west] at (axis cs:48,291) {Norway 2019};
+\node[font=\scriptsize,anchor=west] at (axis cs:200,439) {Ukraine 2022};
+\node[font=\scriptsize,anchor=west] at (axis cs:262,36) {Sweden 2018};
+\node[font=\scriptsize,anchor=west] at (axis cs:224,12) {Switzerland 2025};
+\end{axis}
+\end{tikzpicture}
+\caption{All 257 finalists since 2016. The dashed line marks the same score from both. Source: \texttt{scatter.csv}.}
+\label{fig:scatter}
+\end{figure}
+
+\textbf{Who favours whom.}
+Table~\ref{tab:affinity} lists the pairs with the largest excess over the entry, with at least three meetings.
+In the public vote Greece gave Cyprus its twelve points in all eight finals both reached while Cyprus did the same for Greece in six of seven.
+These values do not distinguish diaspora, a shared music market, language or politics.
+With three meetings a value near $+10$ means three twelves, so the list is a starting point and no verdict.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrlrr@{}}
+\toprule
+\multicolumn{3}{c}{Public} & \multicolumn{3}{c}{Juries}\\
+\cmidrule(r){1-3}\cmidrule(l){4-6}
+Pair & Meetings & Excess & Pair & Meetings & Excess\\
+\midrule
+Greece $\to$ Cyprus & 8 & +10.5 & Montenegro $\to$ Serbia & 5 & +9.8\\
+N. Macedonia $\to$ Albania & 3 & +10.4 & Cyprus $\to$ Greece & 7 & +9.4\\
+Cyprus $\to$ Greece & 7 & +9.8 & Azerbaijan $\to$ Russia & 3 & +9.2\\
+Georgia $\to$ Armenia & 6 & +9.8 & Greece $\to$ Cyprus & 8 & +8.7\\
+Montenegro $\to$ Serbia & 5 & +9.8 & Montenegro $\to$ Albania & 4 & +7.9\\
+\bottomrule
+\end{tabular}
+\caption{Points given beyond what the entry earned from everybody else, mean over shared finals. Source: \texttt{pair\_affinity.parquet}.}
+\label{tab:affinity}
+\end{table}
+
+\textbf{Forecast.}
+Table~\ref{tab:forecast} gives the rank error on finals the model had not seen.
+Only data available the day before the final goes in.
+Pair features with Google Trends reach 5.6 for the public, below the published 6.07 for the total score, although that reference is a different target and so no like-for-like comparison.
+Trends help the public about twice as much as the jury.
+The lyrics and the running order make the trees worse in every combination we tried, because a value shared by all voters of one entry lets a tree memorise the training entries.
+Random forest and boosting land within 0.2 places of each other, so the findings do not depend on the learner.
+The best forecast is badly calibrated: entries given a win probability above 0.5 won one time in eight, so we do not report win probabilities.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+ & & \multicolumn{2}{c}{Jury} & \multicolumn{2}{c}{Public}\\
+\cmidrule(r){3-4}\cmidrule(l){5-6}
+Features & Model & $\rho$ & Rank error & $\rho$ & Rank error\\
+\midrule
+chance & & & 8.5 & & 8.4\\
+pair & boosting & 0.32 & 6.8 & 0.37 & 6.4\\
+pair + lyrics & boosting & 0.21 & 7.5 & 0.29 & 6.8\\
+pair + order & boosting & 0.26 & 7.2 & 0.25 & 7.3\\
+pair + trends & boosting & 0.39 & 6.4 & 0.51 & 5.6\\
+pair + trends & forest & 0.39 & 6.4 & 0.48 & 5.7\\
+\bottomrule
+\end{tabular}
+\caption{Leave-one-year-out forecast, Spearman $\rho$ between predicted and actual place and mean rank error. Source: \texttt{model\_summary.parquet}.}
+\label{tab:forecast}
+\end{table}
+
+\section{Limits}
+
+Ten finals are a small sample and the per-year ranges in the previous section show how much a single year moves the numbers.
+The relationship features are measured, not causal: a shared border, a shared language and large diasporas travel together so we cannot tell them apart.
+The receiver effect describes the song only through what other countries gave it, so the entry share contains bloc votes and the explanation does not separate a good song from a popular one.
+The public vote of the rest of the world (since 2023) is a pooled voter without geography and is excluded from the pair statistics.
+The Trends series is sampled and Bosnia is missing from the Trends list, so 52 panel rows lack a Trends value.
+The decomposition is a statement about explained variance on unseen years and does not say that any vote was influenced.
+
+We did not add the age and sex of the artists, because a third of the entries are bands without either value and name matching would have cost hours for an entry level feature that, like the others, would probably not help trees.
+
+\section{Reproducibility}
+
+The code is available to the course staff on request.
+\texttt{uv run esc all} fetches, parses, builds the panel and fits the models on Linux and Windows; the sources are pinned by checksum and two runs on the same inputs produce identical tables.
+The 74 tests run offline.
+The fixed seed is 20260501.
+
+\medskip
+\footnotesize
+\textbf{References.}
+Adamska, J. and Reiss, J. D. (2025). \emph{Transactions of the International Society for Music Information Retrieval} 8(1), 93--107.
+Spijkervet, J. (2020). The Eurovision Song Contest Dataset. Zenodo, doi:10.5281/zenodo.4036457.
+Mayer, T. and Zignago, S. (2011). Notes on CEPII's distance measures: the GeoDist database. CEPII Working Paper 2011-25.
+
+\clearpage
+\section*{Appendix: features and settings}
+
+\small
+\textbf{Panel.}
+One row per voter, receiver, year and vote type (jury or public) in the final, 19\,800 rows.
+A pair that gave nothing keeps zero points, because only the top ten score and dropping the zeros would leave a panel of successes.
+Self votes are dropped.
+The pooled rest-of-the-world public vote is a voter without geography and is left out of the pair statistics.
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+Feature & Meaning\\
+\midrule
+\texttt{log\_dist} & log of the distance between the two countries (CEPII)\\
+\texttt{contig}, \texttt{smctry} & shared border, same country (CEPII)\\
+\texttt{comlang\_off}, \texttt{comlang\_ethno} & shared official or ethnic language (CEPII)\\
+\texttt{colony}, \texttt{comcol} & colonial tie, common colonizer (CEPII)\\
+\texttt{past\_points}, \texttt{past\_meetings} & mean points the voter gave the receiver in earlier finals, number of earlier finals\\
+\texttt{web\_interest}, \texttt{youtube\_interest} & Google Trends interest for the entry in the voting country, cut the day before the final\\
+\texttt{running\_position} & running order scaled to $[0,1]$\\
+lyrics & sentiment, theme, repetition in verse and chorus (automatic analysis)\\
+\texttt{receiver\_effect} & mean of what all other voters gave the same entry, explanatory only\\
+\bottomrule
+\end{tabular}
+
+\medskip
+\textbf{Feature sets.}
+\emph{pair} uses the first nine features.
+The others add the lyrics, the running order, the two Trends series or both.
+Sets containing the receiver effect are labelled explanatory and never reported as forecasts.
+
+\textbf{Models.}
+Ridge regression with the penalty chosen from 13 values between $10^{-3}$ and $10^{3}$ by the built-in leave-one-out cross-validation on the training rows.
+Gradient boosting (histogram based) with depth 4, learning rate 0.06 and 300 iterations. The decomposition uses a minimum leaf size of 200.
+Random forest with 200 trees, minimum leaf size 20 and half of the features per split.
+Missing values are filled with the training-year median.
+All seeds are fixed (20260501 for the baseline, 0 for the models).
+
+\textbf{Validation.}
+Each year is held out whole.
+The model is fitted on the pair rows of the other nine finals and predicts the pair rows of the held-out final.
+The predicted points are summed per entry and turned into places that are compared with the actual places of the final.
+The rank error is the mean absolute difference between the predicted and the actual place, averaged over finals.
+The chance baseline shuffles the actual places within each final 1\,000 times; its mean is 8.5 for the jury and 8.4 for the public.
+
+\end{document}
