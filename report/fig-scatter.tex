@@ -1,3 +1,5 @@
+\pgfplotsset{discard if not/.style 2 args={x filter/.append code={%
+  \edef\tempa{\thisrow{#1}}\edef\tempb{#2}\ifx\tempa\tempb\else\def\pgfmathresult{inf}\fi}}}
 \begin{figure}[tb]
 \centering
 \begin{tikzpicture}
@@ -9,10 +11,22 @@
 ]
 \addplot[only marks, mark=o, mark size=1.6pt, draw=black!55] table[col sep=comma,x=jury,y=televote] {../data/export/latex/scatter.csv};
 \addplot[dashed, black!40, no marks] coordinates {(0,0) (520,520)};
-\addplot[only marks, mark=*, mark size=2pt, black,
-  nodes near coords, point meta=explicit symbolic,
-  every node near coord/.style={font=\scriptsize, anchor=south west, inner sep=2pt}]
-  table[col sep=comma,x=jury,y=televote,meta=label] {../data/export/latex/scatter-named.csv};
+% one plot per name, so every label gets its own anchor and none covers a point
+\addplot[only marks, mark=*, mark size=2pt, black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.style={font=\scriptsize, inner sep=1pt, anchor=west, xshift=2pt}]
+  table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Ukraine 2022}] {../data/export/latex/scatter-named.csv};
+\addplot[only marks, mark=*, mark size=2pt, black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.style={font=\scriptsize, inner sep=1pt, anchor=west, xshift=2pt}]
+  table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Israel 2024}] {../data/export/latex/scatter-named.csv};
+\addplot[only marks, mark=*, mark size=2pt, black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.style={font=\scriptsize, inner sep=1pt, anchor=north west, xshift=1pt, yshift=-1pt}]
+  table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Norway 2019}] {../data/export/latex/scatter-named.csv};
+\addplot[only marks, mark=*, mark size=2pt, black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.style={font=\scriptsize, inner sep=1pt, anchor=south west, xshift=1pt, yshift=1pt}]
+  table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Sweden 2018}] {../data/export/latex/scatter-named.csv};
+\addplot[only marks, mark=*, mark size=2pt, black, nodes near coords, point meta=explicit symbolic,
+  every node near coord/.style={font=\scriptsize, inner sep=1pt, anchor=west, xshift=2pt, yshift=3pt}]
+  table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Switzerland 2025}] {../data/export/latex/scatter-named.csv};
 \end{axis}
 \end{tikzpicture}
 \caption{Jury against public points of all 257 finalists since 2016. The dashed line marks the same score from both. Source: \texttt{scatter.csv}.}
