@@ -140,7 +140,9 @@ def _records(payload: dict) -> list[dict]:
     return [dict(zip(payload["columns"], r, strict=True)) for r in payload["rows"]]
 
 
-def latex_tables(payloads: dict, names: dict, named: int = 5, top: int = 8) -> dict:
+def latex_tables(
+    payloads: dict, names: dict, named: int = 5, top: int = 8, pairs: int = 5
+) -> dict:
     """small tables that pgfplots reads for the slides and the report"""
     split_rows = [
         {
@@ -170,8 +172,18 @@ def latex_tables(payloads: dict, names: dict, named: int = 5, top: int = 8) -> d
             "excess": [r["excess"] for r in public],
         }
     )
+    sides = {}
+    for code, side in (("t", "public"), ("j", "jury")):
+        rows = [r for r in _records(payloads["affinity"]) if r["type"] == code]
+        rows = rows[:pairs]
+        # a plain arrow, pgfplotstable cannot typeset math inside a string cell
+        labels = [f"{names[r['from']]} \u2192 {names[r['to']]}" for r in rows]
+        sides[f"{side}_label"] = labels
+        sides[f"{side}_meetings"] = [r["meetings"] for r in rows]
+        sides[f"{side}_excess"] = [r["excess"] for r in rows]
     return {
         "split": pd.DataFrame(split_rows),
+        "favourites": pd.DataFrame(sides),
         "scatter": scatter,
         "scatter-named": outliers,
         "favourites-public": favourites,

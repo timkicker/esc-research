@@ -115,6 +115,10 @@ def test_latex_tables_name_the_far_entries_and_keep_the_public_top():
     assert len(tables["scatter"]) == 8
     assert len(tables["scatter-named"]) == 5
     assert list(tables["favourites-public"]["label"]) == ["Greece $\\to$ Cyprus"]
+    side_by_side = tables["favourites"]
+    assert list(side_by_side["public_label"]) == ["Greece \u2192 Cyprus"]
+    assert list(side_by_side["jury_label"]) == ["Cyprus \u2192 Greece"]
+    assert list(side_by_side["jury_meetings"]) == [7]
 
 
 def test_json_is_written_as_utf8_without_escapes(tmp_path, monkeypatch):
