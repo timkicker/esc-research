@@ -1,0 +1,20 @@
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Feature & Meaning\\
+\midrule
+\texttt{log\_dist} & log of the distance between the two countries (CEPII)\\
+\texttt{contig}, \texttt{smctry} & shared border, once the same country (CEPII)\\
+\texttt{comlang\_off}, \texttt{comlang\_ethno} & shared official or ethnic language (CEPII)\\
+\texttt{colony}, \texttt{comcol} & colonial tie, common coloniser (CEPII)\\
+\texttt{past\_points}, \texttt{past\_meetings} & mean points the voter gave the receiver in earlier finals, number of those finals\\
+\texttt{web\_interest}, \texttt{youtube\_interest} & Google Trends interest for the entry in the voting country, before the final\\
+\texttt{running\_position} & running order scaled to $[0,1]$\\
+lyrics & mood, theme, repetition in verse and chorus (language model labels)\\
+\texttt{receiver\_effect} & mean of what all other voters gave the same entry, explanatory only\\
+\bottomrule
+\end{tabular}
+\caption{Features in the panel.}
+\label{tab:features}
+\end{table}

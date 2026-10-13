@@ -1,38 +1,50 @@
-\documentclass[11pt,a4paper]{article}
-\usepackage[a4paper,margin=1.8cm]{geometry}
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{libertinus}
-\usepackage{microtype}
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
 \usepackage{booktabs,tabularx,array}
-\usepackage{xcolor}
+\usepackage{amsmath}
 \usepackage{pgfplots,pgfplotstable}
 \pgfplotsset{compat=1.18}
 \usepackage[authoryear,round]{natbib}
 \usepackage[hidelinks]{hyperref}
-\usepackage{caption}
-\usepackage{multicol}
-\usepackage[compact,small]{titlesec}
-\titlespacing*{\section}{0pt}{1.1ex}{0.6ex}
-\captionsetup{font=small,labelfont=bf}
-\definecolor{jury}{HTML}{3E6590}
-\definecolor{public}{HTML}{B8873A}
-\setlength{\parskip}{0.35em}
+\usepackage{titlesec}
+\titleformat{\section}{\normalsize\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.1em}{0.4em}
+\titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{0.7em}{0.2em}
 \setlength{\parindent}{0pt}
-\renewcommand{\paragraph}[1]{\par\smallskip\textbf{#1.}\ }
+\setlength{\emergencystretch}{1.5em}
+\setlength{\parskip}{0.45em}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.85}\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{4}
 
-\title{\vspace{-2em}Song or neighbours? Jury and public votes at the Eurovision Song Contest, 2016 to 2026\\[0.3em]\large Technical report, mini-project, Introduction to Data Science, University of Helsinki}
-\author{Anna-Ilona Nikolaeva, Yauheni Zviazdou, Tim Kicker}
-\date{\vspace{-1.2em}October 2026}
+\title{\vspace{-1.2cm}\textbf{Song or neighbours? Splitting the Eurovision vote\\ into the entry and the relationship between two countries}}
+\author{Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker\\
+\small Technical report, Introduction to Data Science, University of Helsinki, October 2026}
+\date{}
 
 \begin{document}
 \maketitle
-\vspace*{-1.5em}
+\vspace{-1.2em}
+
+\begin{abstract}\small
+\noindent
+\input{abstract}
+\end{abstract}
+
 \input{body}
 
-\setlength{\bibsep}{0pt}\renewcommand{\bibfont}{\footnotesize}
-\begin{multicols}{2}
+{\footnotesize
+\setlength{\bibsep}{1pt}
 \bibliographystyle{plainnat}
 \bibliography{refs}
-\end{multicols}
+}
+
+\section*{Appendix: features and settings}
+\small
+\input{tab-features}
+\input{appendix}
+
 \end{document}

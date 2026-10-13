@@ -1,20 +1,20 @@
-\begin{table}[t]
-  \centering\small
-  \caption{Forecast of the jury and the public ranking, gradient boosting, each final held out once. Rank error is the mean number of places between predicted and actual rank, $\rho$ is Spearman's rank correlation, both averaged over the ten finals. Chance comes from 1000 random rankings per final, the interval is the 95\,\% range of the mean over ten finals.}
-  \label{tab:forecast}
-  \pgfplotstableread[col sep=comma]{../data/export/latex/forecast.csv}\forecast
-  \pgfplotstabletypeset[
-    every head row/.style={before row={\toprule & \multicolumn{2}{c}{jury} & \multicolumn{2}{c}{public}\\ \cmidrule(lr){2-3}\cmidrule(l){4-5}}, after row=\midrule},
-    every last row/.style={after row=\bottomrule},
-    columns={label,jury_rank_error,jury_spearman,televote_rank_error,televote_spearman},
-    columns/label/.style={string type, column name={inputs}, column type={l}},
-    columns/jury_rank_error/.style={column name={rank error}, fixed, precision=2, zerofill},
-    columns/jury_spearman/.style={column name={$\rho$}, fixed, precision=2, zerofill, empty cells with={}},
-    columns/televote_rank_error/.style={column name={rank error}, fixed, precision=2, zerofill},
-    columns/televote_spearman/.style={column name={$\rho$}, fixed, precision=2, zerofill, empty cells with={}},
-  ]\forecast
-  \par\smallskip\footnotesize chance interval: jury
-  \pgfplotstablegetelem{0}{jury_low}\of\forecast\pgfmathprintnumber[fixed,precision=2,zerofill]{\pgfplotsretval}--\pgfplotstablegetelem{0}{jury_high}\of\forecast\pgfmathprintnumber[fixed,precision=2,zerofill]{\pgfplotsretval},
-  public
-  \pgfplotstablegetelem{0}{televote_low}\of\forecast\pgfmathprintnumber[fixed,precision=2,zerofill]{\pgfplotsretval}--\pgfplotstablegetelem{0}{televote_high}\of\forecast\pgfmathprintnumber[fixed,precision=2,zerofill]{\pgfplotsretval}
+\begin{table}[tb]
+\centering\small
+\pgfplotstableread[col sep=comma]{../data/export/latex/forecast.csv}\forecast
+\pgfplotstabletypeset[
+  every head row/.style={before row={\toprule & \multicolumn{2}{c}{Jury} & \multicolumn{2}{c}{Public}\\ \cmidrule(lr){2-3}\cmidrule(l){4-5}}, after row=\midrule},
+  every last row/.style={after row=\bottomrule},
+  columns={label,jury_spearman,jury_rank_error,televote_spearman,televote_rank_error},
+  columns/label/.style={string type, column name={Inputs (gradient boosting)}, column type=l},
+  columns/jury_spearman/.style={column name={$\rho$}, fixed, precision=2, zerofill, empty cells with={}},
+  columns/jury_rank_error/.style={column name={Rank error}, fixed, precision=2, zerofill},
+  columns/televote_spearman/.style={column name={$\rho$}, fixed, precision=2, zerofill, empty cells with={}},
+  columns/televote_rank_error/.style={column name={Rank error}, fixed, precision=2, zerofill, column type=c},
+]\forecast
+\pgfplotstablegetelem{0}{jury_low}\of\forecast\pgfmathprintnumberto[fixed,precision=2,zerofill]{\pgfplotsretval}{\jurylow}
+\pgfplotstablegetelem{0}{jury_high}\of\forecast\pgfmathprintnumberto[fixed,precision=2,zerofill]{\pgfplotsretval}{\juryhigh}
+\pgfplotstablegetelem{0}{televote_low}\of\forecast\pgfmathprintnumberto[fixed,precision=2,zerofill]{\pgfplotsretval}{\publow}
+\pgfplotstablegetelem{0}{televote_high}\of\forecast\pgfmathprintnumberto[fixed,precision=2,zerofill]{\pgfplotsretval}{\pubhigh}
+\caption{Forecast on the year left out, Spearman's $\rho$ between predicted and actual place and the mean rank error, averaged over ten finals. Chance is the mean of 1000 random rankings per final, its 95\,\% interval for the mean of ten finals is \jurylow{} to \juryhigh{} (jury) and \publow{} to \pubhigh{} (public). Source: \texttt{forecast.csv}.}
+\label{tab:forecast}
 \end{table}

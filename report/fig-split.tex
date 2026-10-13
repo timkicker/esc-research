@@ -1,0 +1,21 @@
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+  xbar, width=0.62\textwidth, height=4.6cm, bar width=6pt,
+  xmin=0, xmax=75, area legend, xlabel={share of the variance in the points, unseen finals (\%)},
+  table/col sep=comma,
+  ytick=data, yticklabels from table={../data/export/latex/split.csv}{label},
+  y dir=reverse, enlarge y limits=0.2,
+  legend style={at={(1.02,0.5)},anchor=west,draw=none,font=\small},
+  tick label style={font=\small}, label style={font=\small},
+  xmajorgrids, major grid style={black!12},
+]
+\addplot[fill=black!70,draw=none,bar shift=3.5pt] table[x=jury,y=y] {../data/export/latex/split.csv};
+\addplot[fill=black!30,draw=none,bar shift=-3.5pt] table[x=public,y=y] {../data/export/latex/split.csv};
+\legend{jury,public}
+\end{axis}
+\end{tikzpicture}
+\caption{How much of the variance in the points each part explains, ridge regression, all ten finals pooled. \emph{Both together} is the overlap of entry and relationship. Source: \texttt{split.csv}.}
+\label{fig:split}
+\end{figure}
