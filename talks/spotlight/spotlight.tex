@@ -8,6 +8,11 @@
 \setsansfont{TeX Gyre Heros}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18,
+  /pgf/number format/assume math mode=true,
+  discard if not/.style 2 args={x filter/.append code={%
+    \edef\tempa{\thisrow{#1}}\edef\tempb{#2}\ifx\tempa\tempb\else\def\pgfmathresult{inf}\fi}}}
 
 \colorlet{muted}{black!55}
 \colorlet{faint}{black!25}
@@ -76,49 +81,88 @@
   \end{tikzpicture}
   \end{center}
   \vfill
-  \src{Spijkervet, 2020; eurovisionworld.com}
+  \src{Spijkervet, 2023; eurovisionworld.com}
 \end{frame}
 
 % ---------------------------------------------------------------------------
 \begin{frame}{Juries and public}
-  \vfill
-  \begin{center}
-  \stat{52 $\rightarrow$ 323}
-       {Israel 2024,\\juries vs.\ public}
-       {eurovisionworld.com}\hfill
-  \stat{214 $\rightarrow$ 0}
-       {Switzerland 2025,\\juries vs.\ public}
-       {eurovisionworld.com}
-  \end{center}
-  \vfill
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+    width=0.9\textwidth, height=0.74\textheight,
+    xmin=0, xmax=470, ymin=0, ymax=470,
+    xlabel={points from the juries}, ylabel={points from the public},
+    tick label style={font=\scriptsize}, label style={font=\scriptsize},
+    axis lines*=left, ymajorgrids, major grid style={faint},
+  ]
+  \addplot[only marks, mark=o, mark size=1.3pt, draw=muted]
+    table[col sep=comma,x=jury,y=televote] {../../data/export/latex/scatter.csv};
+  \addplot[dashed, faint, no marks] coordinates {(0,0) (470,470)};
+  \node[lbl, rotate=45, anchor=south] at (axis cs:395,395) {same score};
+  \addplot[only marks, mark=*, mark size=2.2pt, black, nodes near coords, point meta=explicit symbolic,
+    every node near coord/.style={font=\scriptsize, anchor=west, xshift=2pt}]
+    table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Israel 2024}] {../../data/export/latex/scatter-named.csv};
+  \addplot[only marks, mark=*, mark size=2.2pt, black, nodes near coords, point meta=explicit symbolic,
+    every node near coord/.style={font=\scriptsize, anchor=south west, xshift=1pt, yshift=1pt}]
+    table[col sep=comma,x=jury,y=televote,meta=label,discard if not={label}{Switzerland 2025}] {../../data/export/latex/scatter-named.csv};
+  \end{axis}
+  \end{tikzpicture}
+
+  \raggedright\src{257 songs in the finals 2016 to 2026. Spijkervet, 2023; eurovisionworld.com}
 \end{frame}
 
 % ---------------------------------------------------------------------------
 \begin{frame}{Song or neighbours}
-  \vfill
-  \begin{center}
-  \stat{25\,\% $\rightarrow$ 40\,\%}
-       {the song,\\juries vs.\ public}
-       {this project}\hfill
-  \stat{3\,\% $\rightarrow$ 12\,\%}
-       {the neighbours,\\juries vs.\ public}
-       {this project}
-  \end{center}
-  \vfill
-  \begin{center}
-    \bfseries Neighbours count four times as much for the public
-  \end{center}
-  \vspace{1.5em}
+  \centering
+  \begin{tikzpicture}
+  \begin{axis}[
+    xbar, width=0.8\textwidth, height=0.56\textheight, bar width=10pt,
+    xmin=0, xmax=50, table/col sep=comma,
+    restrict y to domain=0:1,
+    ytick={0,1}, yticklabels={the song,the neighbours}, y dir=reverse,
+    enlarge y limits=0.45,
+    xlabel={share of a country's points explained (\%)},
+    tick label style={font=\scriptsize}, label style={font=\scriptsize},
+    nodes near coords={\pgfmathprintnumber[fixed,precision=1,zerofill,assume math mode=true]{\pgfplotspointmeta}\,\%},
+    nodes near coords style={font=\scriptsize},
+    point meta=x,
+    axis lines*=left, xmajorgrids, major grid style={faint},
+    legend style={font=\scriptsize, draw=none, at={(0.98,0.04)}, anchor=south east},
+  ]
+  \addplot[fill=black!75, draw=none, bar shift=5.5pt] table[x=jury,y=y] {../../data/export/latex/split.csv};
+  \addplot[fill=black!25, draw=none, bar shift=-5.5pt] table[x=public,y=y] {../../data/export/latex/split.csv};
+  \legend{juries,public}
+  \end{axis}
+  \end{tikzpicture}
+
+  \vspace{0.6em}
+  {\bfseries Neighbours count more than four times as much for the public\par}
+  \vspace{0.3em}
+  \raggedright\src{This project, ten finals 2016 to 2026, checked on finals the method had not seen}
 \end{frame}
 
 % ---------------------------------------------------------------------------
-\begin{frame}{Look up your country}
+\begin{frame}{Greece, 2024}
   \vfill
   \begin{center}
-    \includegraphics[height=0.68\textheight]{explorer.png}
+  \begin{tikzpicture}[row/.style={font=\small,anchor=base west}]
+    \node[lbl,anchor=base west] at (-3.6,1.9) {Greek jury};
+    \node[lbl,anchor=base west] at (1.2,1.9) {Greek public};
+    \foreach \p/\c/\y in {12/Switzerland/1.0,10/Cyprus/0.2,8/Italy/-0.6,7/France/-1.4} {
+      \node[row,muted] at (-3.6,\y) {\p};
+      \node[row] (j\c) at (-3.0,\y) {\c};
+    }
+    \foreach \p/\c/\y in {12/Cyprus/1.0,10/France/0.2,8/Switzerland/-0.6,7/Israel/-1.4} {
+      \node[row,muted] at (1.2,\y) {\p};
+      \node[row] (t\c) at (1.8,\y) {\c};
+    }
+    \foreach \c in {Switzerland,Cyprus,France} {
+      \draw[faint] ([xshift=6pt,yshift=3pt]j\c.base east) -- ([yshift=3pt]t\c.base west -| 0.95,0);
+    }
+  \end{tikzpicture}
   \end{center}
   \vfill
-  \src{tim.kicker.dev/projects/esc-research}
+  \src{eurovisionworld.com}
 \end{frame}
 
 % ---------------------------------------------------------------------------
@@ -141,10 +185,6 @@
       \end{itemize}
   \end{columns}
   \vfill
-  \begin{center}
-    \bfseries tim.kicker.dev/projects/esc-research
-  \end{center}
-  \vspace{1.5em}
 \end{frame}
 
 \end{document}
