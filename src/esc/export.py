@@ -140,9 +140,7 @@ def _records(payload: dict) -> list[dict]:
     return [dict(zip(payload["columns"], r, strict=True)) for r in payload["rows"]]
 
 
-def latex_tables(
-    payloads: dict, names: dict, named: int = 5, top: int = 8, pairs: int = 5
-) -> dict:
+def latex_tables(payloads: dict, names: dict, named: int = 5, top: int = 8) -> dict:
     """small tables that pgfplots reads for the slides and the report"""
     split_rows = [
         {
@@ -172,18 +170,8 @@ def latex_tables(
             "excess": [r["excess"] for r in public],
         }
     )
-    sides = {}
-    for code, side in (("t", "public"), ("j", "jury")):
-        rows = [r for r in _records(payloads["affinity"]) if r["type"] == code]
-        rows = rows[:pairs]
-        # a plain arrow, pgfplotstable cannot typeset math inside a string cell
-        labels = [f"{names[r['from']]} \u2192 {names[r['to']]}" for r in rows]
-        sides[f"{side}_label"] = labels
-        sides[f"{side}_meetings"] = [r["meetings"] for r in rows]
-        sides[f"{side}_excess"] = [r["excess"] for r in rows]
     return {
         "split": pd.DataFrame(split_rows),
-        "favourites": pd.DataFrame(sides),
         "scatter": scatter,
         "scatter-named": outliers,
         "favourites-public": favourites,
@@ -213,6 +201,26 @@ def forecast_table(summary: pd.DataFrame, chance: pd.DataFrame) -> pd.DataFrame:
         f"{v}_{k}" for v in VOTE_CODE for k in ("rank_error", "spearman", "low", "high")
     ]
     return pd.DataFrame(rows).reindex(columns=columns)
+
+
+def favourites(pairs: pd.DataFrame, names: dict, top: int = 5) -> pd.DataFrame:
+    """strongest public and jury pairs side by side for the report table
+
+    rounded once from full precision, the site json already rounds to two
+    places and a second rounding would turn 9.849 into 9.9
+    """
+    reliable = pairs[pairs["meetings"] >= MIN_MEETINGS]
+    sides = {}
+    for vote_type, side in (("televote", "public"), ("jury", "jury")):
+        best = reliable[reliable["vote_type"] == vote_type].nlargest(top, "excess")
+        # a plain arrow, pgfplotstable cannot typeset math inside a string cell
+        sides[f"{side}_label"] = [
+            f"{names[a]} \u2192 {names[b]}"
+            for a, b in zip(best["from_iso3"], best["to_iso3"], strict=True)
+        ]
+        sides[f"{side}_meetings"] = [int(m) for m in best["meetings"]]
+        sides[f"{side}_excess"] = [round(float(e), 1) for e in best["excess"]]
+    return pd.DataFrame(sides)
 
 
 def _write_latex(name: str, frame: pd.DataFrame) -> Path:
@@ -262,6 +270,7 @@ def main() -> list[Path]:
         written.append(Path(shutil.copy2(path, SITE_DATA / path.name)))
     tables = latex_tables(payloads, payloads["meta"]["countries"])
     tables["forecast"] = forecast_table(summary, chance)
+    tables["favourites"] = favourites(pairs, payloads["meta"]["countries"])
     written += [_write_latex(name, frame) for name, frame in tables.items()]
     written += [
         _write_csv("pairs", features),
