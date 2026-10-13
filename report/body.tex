@@ -71,8 +71,7 @@ Russia has no rows after 2021 and Belarus none after 2019. Since 2023 viewers ou
 \section{Reflection on the canvas}\label{sec:reflection}
 
 \subsection{Changes and why}
-Table~\ref{tab:changes} compares the canvas the TA commented on in mid-September with what we did. Its fields for exploratory analysis and visualisation were still empty. At a team meeting on 17 September we dropped the odds and market prices. We did not write down why. Without market data the old target group had nothing left, so we turned to fans and delegations.
-\input{tab-changes}
+The canvas of September planned one row per entry, but 257 entries are too few for a dozen inputs, so we moved to one row per directed country pair. Because jury and public points exist separately only from 2016, the question about changes between voting systems became a comparison of juries and public from 2016 on. At a team meeting on 17 September we dropped the bookmaker odds and market prices (the reason was not written down), so we turned from prediction market users to fans and delegations. Google Trends replaced Wikipedia page views because it exists per country. The browser based scraping of eurovisionworld.com became a direct download of its data file, because the browser driver failed on two machines in the group.
 
 \subsection{What worked and what did not}
 The pair level made country effects measurable and keeping juries and public apart gave the main finding. Search interest per voting country clearly improved the forecast. The canvas planned to query Trends in batches next to an anchor term. The first file was 96.7\,\% zeros and only became usable with one query per entry. For weeks the pipeline ran on one laptop only.
