@@ -13,10 +13,11 @@ from esc import config, pipeline
 
 
 def _model() -> None:
-    from esc.models import explain, run
+    from esc.models import explain, leakcheck, run
 
     run.main()
     explain.main()
+    leakcheck.main()
 
 
 def _all() -> None:

@@ -23,14 +23,15 @@ SHOW_KEYS = ["year", "round", "vote_type"]
 ENTRY_KEYS = [*SHOW_KEYS, "to_iso3"]
 
 
-def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
-    """mean points this ordered pair exchanged in earlier contests
+def pair_history(votes: pd.DataFrame, skip_year: int | None = None) -> pd.DataFrame:
+    """mean points and meetings of each ordered pair in strictly earlier finals
 
-    uses the whole vote history including the years before the panel. only
-    strictly earlier years count so it cannot leak the year it predicts
+    skip_year drops one contest from the history, so a check can rebuild the
+    feature from the training years of a fold only
     """
-    history = io.read_parquet("votes", "processed")
-    history = history[history["round"] == "final"]
+    history = votes[votes["round"] == "final"]
+    if skip_year is not None:
+        history = history[history["year"] != skip_year]
     per_year = (
         history.groupby(["from_iso3", "to_iso3", "year"], as_index=False)["points"]
         .mean()
@@ -41,9 +42,18 @@ def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
     per_year["past_meetings"] = grouped.transform(
         lambda s: s.shift().expanding().count()
     )
+    return per_year[["from_iso3", "to_iso3", "year", "past_points", "past_meetings"]]
 
+
+def _past_points(panel: pd.DataFrame) -> pd.DataFrame:
+    """mean points this ordered pair exchanged in earlier contests
+
+    uses the whole vote history including the years before the panel. only
+    strictly earlier years count so it cannot leak the year it predicts
+    """
+    per_year = pair_history(io.read_parquet("votes", "processed"))
     out = panel.merge(
-        per_year[["from_iso3", "to_iso3", "year", "past_points", "past_meetings"]],
+        per_year,
         on=["from_iso3", "to_iso3", "year"],
         how="left",
         validate="m:1",
