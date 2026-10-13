@@ -1,0 +1,38 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[a4paper,margin=1.8cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{libertinus}
+\usepackage{microtype}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage{pgfplots,pgfplotstable}
+\pgfplotsset{compat=1.18}
+\usepackage[authoryear,round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}
+\usepackage{multicol}
+\usepackage[compact,small]{titlesec}
+\titlespacing*{\section}{0pt}{1.1ex}{0.6ex}
+\captionsetup{font=small,labelfont=bf}
+\definecolor{jury}{HTML}{3E6590}
+\definecolor{public}{HTML}{B8873A}
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{0pt}
+\renewcommand{\paragraph}[1]{\par\smallskip\textbf{#1.}\ }
+
+\title{\vspace{-2em}Song or neighbours? Jury and public votes at the Eurovision Song Contest, 2016 to 2026\\[0.3em]\large Technical report, mini-project, Introduction to Data Science, University of Helsinki}
+\author{Anna-Ilona Nikolaeva, Yauheni Zviazdou, Tim Kicker}
+\date{\vspace{-1.2em}October 2026}
+
+\begin{document}
+\maketitle
+\vspace*{-1.5em}
+\input{body}
+
+\setlength{\bibsep}{0pt}\renewcommand{\bibfont}{\footnotesize}
+\begin{multicols}{2}
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{multicols}
+\end{document}
