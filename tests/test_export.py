@@ -124,3 +124,35 @@ def test_json_is_written_as_utf8_without_escapes(tmp_path, monkeypatch):
     assert "Zoë" in text
     assert json.loads(text) == {"artist": "Zoë"}
     assert path == tmp_path / "site" / "probe.json"
+
+
+def test_forecast_table_shows_chance_and_only_the_main_model():
+    rows = []
+    for model in ("ridge", "boosting"):
+        for vote_type in ("jury", "televote"):
+            for name in ("pair", "pair+attention", "pair+receiver"):
+                rows.append(
+                    {
+                        "model": model,
+                        "vote_type": vote_type,
+                        "features": name,
+                        "rank_error": 6.0 if model == "boosting" else 7.0,
+                        "spearman": 0.4,
+                    }
+                )
+    chance = pd.DataFrame(
+        {
+            "vote_type": ["jury", "televote"],
+            "rank_error": [8.5, 8.4],
+            "low": [8.3, 8.2],
+            "high": [8.7, 8.6],
+        }
+    )
+    table = export.forecast_table(pd.DataFrame(rows), chance)
+    assert list(table["label"]) == [
+        "chance",
+        "country pair",
+        "country pair + search interest",
+    ]
+    assert table.loc[0, "televote_low"] == 8.2
+    assert set(table.loc[1:, "jury_rank_error"]) == {6.0}

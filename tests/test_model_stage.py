@@ -98,6 +98,9 @@ def test_the_model_stage_runs_end_to_end(processed):
     explain.main()
     leakcheck.main()
 
+    chance = io.read_parquet("chance", "processed")
+    assert set(chance["vote_type"]) == {"jury", "televote"}
+    assert (chance["low"] < chance["high"]).all()
     checked = io.read_parquet("leakcheck", "processed")
     assert set(checked["history"]) == {"all earlier years", "training years only"}
 

@@ -35,7 +35,12 @@ def ranking_metrics(entries: pd.DataFrame, truth: str, predicted: str) -> pd.Dat
 
 
 def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dict:
-    """what chance looks like (with an interval) so a rank error can be placed"""
+    """what chance looks like (with an interval) so a rank error can be placed
+
+    low and high bound the mean over all contests, which is what a model's
+    rank error is compared against. contest_low and contest_high bound a single
+    contest and are much wider
+    """
     generator = rng()
     errors = []
     for (_year, _vote_type), group in entries.groupby(["year", "vote_type"]):
@@ -47,12 +52,23 @@ def random_baseline(entries: pd.DataFrame, truth: str, draws: int = 1000) -> dic
             .astype("float64")
             .to_numpy()
         )
-        for _ in range(draws):
-            shuffled = generator.permutation(actual)
-            errors.append(np.abs(actual - shuffled).mean())
+        errors.append(
+            [
+                np.abs(actual - generator.permutation(actual)).mean()
+                for _ in range(draws)
+            ]
+        )
     errors = np.asarray(errors)
-    low, high = np.percentile(errors, [2.5, 97.5])
-    return {"rank_error": float(errors.mean()), "low": float(low), "high": float(high)}
+    low, high = np.percentile(errors.mean(axis=0), [2.5, 97.5])
+    contest_low, contest_high = np.percentile(errors, [2.5, 97.5])
+    return {
+        "rank_error": float(errors.mean()),
+        "low": float(low),
+        "high": float(high),
+        "contest_low": float(contest_low),
+        "contest_high": float(contest_high),
+        "contests": len(errors),
+    }
 
 
 def win_probabilities(

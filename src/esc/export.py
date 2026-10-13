@@ -19,6 +19,15 @@ SITE_DATA = config.ROOT / "site" / "data"
 VOTE_CODE = {"jury": "j", "televote": "t"}
 SHARES = ["entry_only", "pair_only", "overlap", "noise"]
 HEADLINE_MODEL = "ridge"
+# fixed before any result in the canvas of 1 october, so it is not picked on test years
+FORECAST_MODEL = "boosting"
+FORECAST_LABELS = {
+    "pair": "country pair",
+    "pair+lyrics": "country pair + lyrics",
+    "pair+order": "country pair + running order",
+    "pair+attention": "country pair + search interest",
+    "pair+attention+order": "country pair + search interest + running order",
+}
 
 
 def votes(features: pd.DataFrame) -> dict:
@@ -169,6 +178,31 @@ def latex_tables(payloads: dict, names: dict, named: int = 5, top: int = 8) -> d
     }
 
 
+def forecast_table(summary: pd.DataFrame, chance: pd.DataFrame) -> pd.DataFrame:
+    """chance and every forecast set of the main model, jury next to televote"""
+    by_type = chance.set_index("vote_type")
+    rows = [{"label": "chance"}]
+    for v in VOTE_CODE:
+        rows[0][f"{v}_rank_error"] = round(float(by_type.loc[v, "rank_error"]), 2)
+        rows[0][f"{v}_low"] = round(float(by_type.loc[v, "low"]), 2)
+        rows[0][f"{v}_high"] = round(float(by_type.loc[v, "high"]), 2)
+    main = summary[summary["model"] == FORECAST_MODEL].set_index(
+        ["features", "vote_type"]
+    )
+    for name, label in FORECAST_LABELS.items():
+        if (name, "jury") not in main.index:
+            continue
+        row = {"label": label}
+        for v in VOTE_CODE:
+            row[f"{v}_rank_error"] = round(float(main.loc[(name, v), "rank_error"]), 2)
+            row[f"{v}_spearman"] = round(float(main.loc[(name, v), "spearman"]), 2)
+        rows.append(row)
+    columns = ["label"] + [
+        f"{v}_{k}" for v in VOTE_CODE for k in ("rank_error", "spearman", "low", "high")
+    ]
+    return pd.DataFrame(rows).reindex(columns=columns)
+
+
 def _write_latex(name: str, frame: pd.DataFrame) -> Path:
     path = EXPORT / "latex" / f"{name}.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -197,6 +231,10 @@ def main() -> list[Path]:
     decomposition = io.read_parquet("decomposition", "processed")
     pairs = io.read_parquet("pair_affinity", "processed")
     names = io.read_parquet("country_names", "interim")
+    summary = io.read_parquet("model_summary", "processed")
+    chance = io.read_parquet("chance", "processed")
+    calibration = io.read_parquet("calibration", "processed")
+    leakcheck = io.read_parquet("leakcheck", "processed")
 
     payloads = {
         "meta": meta(features, names),
@@ -211,12 +249,17 @@ def main() -> list[Path]:
     for path in list(written):
         written.append(Path(shutil.copy2(path, SITE_DATA / path.name)))
     tables = latex_tables(payloads, payloads["meta"]["countries"])
+    tables["forecast"] = forecast_table(summary, chance)
     written += [_write_latex(name, frame) for name, frame in tables.items()]
     written += [
         _write_csv("pairs", features),
         _write_csv("entries", table),
         _write_csv("decomposition", decomposition),
         _write_csv("pair_affinity", pairs),
+        _write_csv("forecast", summary),
+        _write_csv("chance", chance),
+        _write_csv("calibration", calibration),
+        _write_csv("leakcheck", leakcheck),
     ]
     for path in written:
         size = path.stat().st_size / 1024
