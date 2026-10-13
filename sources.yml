@@ -17,10 +17,10 @@ sources:
       contestants.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/contestants.csv
       votes.csv: https://github.com/Spijkervet/eurovision-dataset/releases/download/2023/votes.csv
     kind: download
-    license: unspecified
+    license: CC BY 4.0 (Zenodo record of the 2023 release)
     citation: >-
-      Spijkervet, J. (2020). The Eurovision Song Contest Dataset (Version 1.0)
-      [Data set]. Zenodo. https://doi.org/10.5281/zenodo.4036457
+      Spijkervet, J. (2023). Spijkervet/eurovision-dataset: 2023 (Version 2023).
+      Zenodo. https://doi.org/10.5281/zenodo.10088892
     retrieved_at: '2026-10-01T09:46:13Z'
     sha256:
       contestants.csv: 3b8cc72b81a63ea63788b711248b5f23544b6e3778d8a3a4e976309c69adedf7
@@ -30,8 +30,9 @@ sources:
       running_final, the jury and televote split per entry and the lyrics.
       votes.csv has 51354 rows 1957-2023, jury and televote filled from 2016.
       the two files disagree about country names: contestants spells them out,
-      votes uses lowercase iso2. the repo has no LICENSE file, the authors ask
-      to be cited. upstream is dead since november 2023, hence eurovisionworld
+      votes uses lowercase iso2. the github repo has no LICENSE file, the
+      zenodo record of the 2023 release says CC BY 4.0. upstream is dead
+      since november 2023, hence eurovisionworld
 
   - id: eurovisionworld
     name: eurovisionworld.com results, 2024 onwards
@@ -170,6 +171,11 @@ sources:
 
 # considered and rejected, listed so nobody adds them later thinking nobody looked
 excluded:
+  - id: betting_odds
+    name: bookmaker odds and Polymarket prices
+    reason: >-
+      planned as a benchmark, dropped with the team on 2026-09-17. the reason
+      was not written down
   - id: spotify
     name: Spotify Web API
     reason: terms of use prohibit machine learning applications

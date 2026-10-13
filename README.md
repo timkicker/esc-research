@@ -80,7 +80,7 @@ Only `data/manual/` is in git. `sources.yml` is in git too but a run never chang
 
 `sources.yml` has the urls, licenses and checksums.
 
-- Spijkervet, J. (2020). The Eurovision Song Contest Dataset v1.0. Zenodo. https://doi.org/10.5281/zenodo.4036457. Results, votes and lyrics up to 2023 (we use the 2023 release). There is no license file but the authors ask to be cited.
+- Spijkervet, J. (2023). Spijkervet/eurovision-dataset: 2023. Zenodo. https://doi.org/10.5281/zenodo.10088892. Results, votes and lyrics up to 2023. The GitHub repo has no license file, the Zenodo record of this release says CC BY 4.0.
 - eurovisionworld.com for 2024 to 2026, where the dataset stops. The results page loads all its points from a small script file with json in it, so we download that file directly and keep it on disk. robots.txt allows it.
 - Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0. Distance, shared border and shared language for every pair.
 - [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset) is the repo of our teammate (GPL-3.0). From there we take what an llm read out of the lyrics, the song language and Google Trends for every entry in every voting country. We only read its data files at a fixed commit and use none of its code.
@@ -91,7 +91,7 @@ Some things we left out on purpose. YouTube views can't be used because the API 
 
 ## Gotchas
 
-- Nothing is joined on country names. Everything goes through `data/manual/country_map.csv`, which maps 116 labels from three different spellings onto iso3.
+- Nothing is joined on country names. Everything goes through `data/manual/country_map.csv`, which maps 108 labels (spelled out names and lowercase iso2) onto iso3.
 - There was no contest in 2020.
 - In 1956 every country sent two songs. It is the only year where `year-iso3` is not unique.
 - CEPII is from 2004, so Romania is still `ROM` there and Serbia and Montenegro are under `YUG`.
