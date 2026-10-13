@@ -51,6 +51,17 @@ def test_chance_sits_near_a_third_of_the_field():
     assert 6 < chance["rank_error"] < 12
 
 
+def test_chance_interval_for_the_mean_is_narrower_than_for_one_contest():
+    frame = pd.concat(
+        entries(list(range(26, 0, -1)), [0.0] * 26).assign(year=year)
+        for year in range(2016, 2026)
+    )
+    chance = evaluate.random_baseline(frame, "actual", draws=300)
+    assert chance["contests"] == 10
+    assert chance["contest_low"] < chance["low"] < chance["rank_error"]
+    assert chance["rank_error"] < chance["high"] < chance["contest_high"]
+
+
 def test_win_probabilities_sum_to_one_per_contest():
     pairs = pd.DataFrame(
         {

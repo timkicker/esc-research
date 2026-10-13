@@ -89,6 +89,7 @@ def evaluate(panel: pd.DataFrame, columns: list[str], estimator: str) -> dict:
 def main() -> None:
     rows = []
     kept = {}
+    chances = []
     explain_only = set()
     for vote_type in VOTE_TYPES:
         panel = load(vote_type)
@@ -100,9 +101,13 @@ def main() -> None:
             f"\n== {vote_type}: {len(panel)} pair rows, "
             f"{panel['year'].nunique()} contests"
         )
+        chances.append({"vote_type": vote_type, **chance})
         print(
             f"   chance rank error {chance['rank_error']:.2f} "
-            f"(95% {chance['low']:.2f} to {chance['high']:.2f})"
+            f"(95% for the mean of {chance['contests']} contests "
+            f"{chance['low']:.2f} to {chance['high']:.2f}, "
+            f"for one contest {chance['contest_low']:.2f} "
+            f"to {chance['contest_high']:.2f})"
         )
         explain_only |= explanatory(sets)
         for name, columns in sets.items():
@@ -128,12 +133,19 @@ def main() -> None:
 
     summary = pd.DataFrame(rows)
     io.write_parquet(summary, "model_summary", "processed")
+    io.write_parquet(pd.DataFrame(chances), "chance", "processed")
     # the receiver effect explains a result but does not forecast one
     forecasting = {k: v for k, v in kept.items() if k[1] not in explain_only}
     scored = summary.set_index(["vote_type", "features", "model"])
     best = max(forecasting, key=lambda k: scored.loc[k, "spearman"])
     io.write_parquet(forecasting[best], "model_entries", "processed")
     curve = calibration_curve(forecasting[best], "won", "win_probability")
+    curve["bucket"] = curve["bucket"].astype(str)
+    io.write_parquet(
+        curve.assign(vote_type=best[0], features=best[1], model=best[2]),
+        "calibration",
+        "processed",
+    )
     print(f"\ncalibration of {best}:")
     print(curve.to_string(index=False))
 
