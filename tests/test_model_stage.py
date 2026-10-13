@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 
 from esc import io
-from esc.models import PAIR, explain, run
+from esc.models import PAIR, explain, leakcheck, run
 
 COUNTRIES = ["AUT", "SWE", "GRC", "CYP", "SRB", "WLD"]
 YEARS = [2016, 2017, 2018]
@@ -93,8 +93,13 @@ def test_every_estimator_gives_the_same_answer_twice(estimator):
 # random pair features leave some synthetic rankings constant
 @pytest.mark.filterwarnings("ignore::scipy.stats.ConstantInputWarning")
 def test_the_model_stage_runs_end_to_end(processed):
+    io.write_parquet(synthetic_panel(), "votes", "processed")
     run.main()
     explain.main()
+    leakcheck.main()
+
+    checked = io.read_parquet("leakcheck", "processed")
+    assert set(checked["history"]) == {"all earlier years", "training years only"}
 
     summary = io.read_parquet("model_summary", "processed")
     assert set(summary["model"]) == set(run.ESTIMATORS)
@@ -116,3 +121,25 @@ def test_the_model_stage_runs_end_to_end(processed):
         ("GRC", "CYP"),
         ("CYP", "GRC"),
     }
+
+
+def test_the_folded_history_leaves_out_the_held_out_year():
+    votes = synthetic_panel()
+    panel = votes.copy()
+    history = leakcheck.pair_history(votes)
+    panel = panel.drop(columns=leakcheck.HISTORY).merge(
+        history, on=leakcheck.KEYS, how="left"
+    )
+    folded = leakcheck.folded(panel, votes, 2017)
+    held = panel["year"] == 2017
+    pd.testing.assert_frame_equal(folded[held], panel[held])
+    # 2018 saw 2016 and 2017 before, without 2017 its history is 2016 alone
+    later = panel["year"] == 2018
+    expected = (
+        votes[votes["year"] == 2016]
+        .groupby(["from_iso3", "to_iso3"])["points"]
+        .mean()
+        .astype("float64")
+    )
+    got = folded[later].groupby(["from_iso3", "to_iso3"])["past_points"].first()
+    assert np.allclose(got.reindex(expected.index), expected)
