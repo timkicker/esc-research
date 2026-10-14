@@ -87,9 +87,11 @@ sources:
       constrain to eurovision participants. bands have neither property, that is
       roughly a third of all entries. the query asks for everything with
       participant in (P1344) one edition and the performers (P175) of those
-      songs, one file per year. live data with no release, so no pinned
-      checksum, provenance.yml records what a run got. 2016-2026: 345 of 354
-      entries found, 248 solo with age and sex
+      songs, one file per year, and the birth dates of those people with their
+      precision in a second file, since an unknown date is stored as
+      2000-01-01 at century precision. live data with no release, so no pinned
+      checksum, provenance.yml records what a run got. 1956-2026: 1597 of 1748
+      entries found, 1101 solo, most of the misses before 1980
 
   - id: team_dataset
     name: teammate repo, lyrics analysis and google trends

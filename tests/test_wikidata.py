@@ -25,6 +25,7 @@ def row(item, item_label, person, person_label, kind, birth=None, sex=None):
     }
     if birth:
         out["birth"] = {"value": f"{birth}T00:00:00Z"}
+        out["birthPrecision"] = {"value": "11"}
     if sex:
         out["sex"] = {"value": WD + sex}
     return out
@@ -41,6 +42,11 @@ BINDINGS = [
     # birthday one day after the final
     row("Q6", "Lighter", "Q7", "Kyle Alessandro", "Q5", "2006-05-18", MALE),
     row("Q8", "Voyage", "Q9", "Zoe Me", "Q5", "2000-10-06", NONBINARY),
+    # an unknown birth date, 2000-01-01 at century precision
+    {
+        **row("Q11", "Tina", "Q11", "Tina", "Q5", "2000-01-01", FEMALE),
+        "birthPrecision": {"value": "7"},
+    },
     # a presenter, takes part but has no entry
     row("Q10", "Hazel Brugger", "Q10", "Hazel Brugger", "Q5", "1993-12-09", FEMALE),
 ]
@@ -53,6 +59,7 @@ ENTRIES = [
     ("2025-CHE", "Zoë Më", "Voyage"),
     ("2025-ITA", "Ermal Meta & Fabrizio Moro", "Non mi avete fatto niente"),
     ("2025-NLD", "OG3NE", "Lights and Shadows"),
+    ("2025-IRL", "Tina", "Cross Your Heart"),
 ]
 
 
@@ -62,6 +69,13 @@ def artists(data_root):
     folder.mkdir(parents=True)
     results = {"results": {"bindings": BINDINGS}}
     (folder / "2025.json").write_text(json.dumps(results), encoding="utf-8")
+    births = [
+        {key: r[key] for key in ("person", "birth", "birthPrecision")}
+        for r in BINDINGS
+        if "birth" in r
+    ]
+    births = json.dumps({"results": {"bindings": births}})
+    (folder / "2025-births.json").write_text(births, encoding="utf-8")
     (folder / "editions.json").write_text("{}", encoding="utf-8")
 
     entries = pd.DataFrame(ENTRIES, columns=["entry_id", "artist", "song"])
@@ -90,6 +104,11 @@ def test_stage_name_matches_full_name(artists):
 
 def test_age_is_counted_at_the_final(artists):
     assert artists.loc["2025-SWE", "artist_age"] == 18
+
+
+def test_a_birth_date_without_a_day_gives_no_age(artists):
+    assert pd.isna(artists.loc["2025-IRL", "artist_age"])
+    assert artists.loc["2025-IRL", "artist_sex"] == "female"
 
 
 def test_sex_beyond_male_and_female_is_other(artists):

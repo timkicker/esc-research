@@ -4,7 +4,8 @@ a plain name match is not enough because "Sergey Lazarev" alone returns six
 different people, so the query only asks for what took part in one edition
 (P1344) and the performers of those songs (P175). parse matches the names to
 our entries offline, inside one year they are unique. one query for the
-edition per year and one per edition, the combined query times out
+edition per year, one per edition and one for the birth dates of the people it
+returned. asking for the date precision inside the edition query times out
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from esc.fetch import record_provenance
 
 SOURCE_ID = "wikidata"
 ENDPOINT = "https://query.wikidata.org/sparql"
-YEARS = tuple(y for y in range(2016, 2027) if y != 2020)
+YEARS = tuple(y for y in range(1956, 2027) if y != 2020)
 EDITIONS_FILE = "editions.json"
 BETWEEN = 1
 
@@ -31,15 +32,23 @@ SELECT ?edition ?date WHERE {
 
 # the edition has to sit inside both branches, a bare BIND scans everything
 PARTICIPANTS = """
-SELECT ?item ?itemLabel ?person ?personLabel ?personType ?birth ?sex WHERE {
+SELECT ?item ?itemLabel ?person ?personLabel ?personType ?sex WHERE {
   VALUES ?edition { wd:%s }
   { ?item wdt:P1344 ?edition . BIND(?item AS ?person) }
   UNION
   { ?item wdt:P1344 ?edition ; wdt:P175 ?person . }
   OPTIONAL { ?person wdt:P31 ?personType }
-  OPTIONAL { ?person wdt:P569 ?birth }
   OPTIONAL { ?person wdt:P21 ?sex }
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en,mul". }
+}
+"""
+
+# the precision tells a real date from an unknown one stored as 2000-01-01
+BIRTHS = """
+SELECT ?person ?birth ?birthPrecision WHERE {
+  VALUES ?person { %s }
+  ?person p:P569/psv:P569 [ wikibase:timeValue ?birth ;
+                            wikibase:timePrecision ?birthPrecision ] .
 }
 """
 
@@ -70,7 +79,12 @@ def editions(text: str) -> dict[int, str]:
 def fetch() -> list[Path]:
     target = config.RAW / SOURCE_ID
     target.mkdir(parents=True, exist_ok=True)
-    missing = [y for y in YEARS if not (target / f"{y}.json").exists()]
+    missing = [
+        y
+        for y in YEARS
+        if not (target / f"{y}.json").exists()
+        or not (target / f"{y}-births.json").exists()
+    ]
     print(f"[{SOURCE_ID}] {len(YEARS)} year(s), {len(missing)} still to fetch")
 
     if missing:
@@ -85,8 +99,12 @@ def fetch() -> list[Path]:
             text = _query(session, PARTICIPANTS % known[year])
             path = target / f"{year}.json"
             path.write_text(text, encoding="utf-8")
-            rows = len(json.loads(text)["results"]["bindings"])
-            print(f"  {path.name}: edition {known[year]}, {rows} rows")
+            rows = json.loads(text)["results"]["bindings"]
+            print(f"  {path.name}: edition {known[year]}, {len(rows)} rows")
+            people = sorted({r["person"]["value"].rsplit("/", 1)[-1] for r in rows})
+            values = " ".join(f"wd:{qid}" for qid in people)
+            births = target / f"{year}-births.json"
+            births.write_text(_query(session, BIRTHS % values), encoding="utf-8")
             time.sleep(BETWEEN)
 
     paths = sorted(target.glob("*.json"))

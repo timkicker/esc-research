@@ -20,6 +20,7 @@ from esc.parse import enforce
 
 RAW_ID = "wikidata"
 HUMAN = "Q5"
+DAY = "11"
 SEX = {
     "Q6581097": "male",
     "Q6581072": "female",
@@ -48,9 +49,23 @@ def _label(row: dict, key: str) -> str:
     return row.get(key, {}).get("value", "")
 
 
+def _births(path: Path) -> dict[str, set[str]]:
+    """person -> birth dates known to the day"""
+    if not path.exists():
+        raise FileNotFoundError(f"{path} is missing, run `esc data` again")
+    rows = json.loads(path.read_text(encoding="utf-8"))["results"]["bindings"]
+    out: dict[str, set[str]] = {}
+    for row in rows:
+        # an unknown birth date is stored as 2000-01-01 at century precision
+        if row["birthPrecision"]["value"] == DAY:
+            out.setdefault(_qid(row, "person"), set()).add(row["birth"]["value"][:10])
+    return out
+
+
 def _participants(path: Path) -> tuple[dict, dict, dict]:
     """people with their facts, song title -> performers, name -> people"""
     rows = json.loads(path.read_text(encoding="utf-8"))["results"]["bindings"]
+    births = _births(path.with_name(f"{path.stem}-births.json"))
     people: dict[str, dict] = {}
     by_song: dict[str, set[str]] = {}
     by_name: dict[str, set[str]] = {}
@@ -61,8 +76,7 @@ def _participants(path: Path) -> tuple[dict, dict, dict]:
         )
         if kind := _qid(row, "personType"):
             facts["types"].add(kind)
-        if birth := row.get("birth", {}).get("value"):
-            facts["births"].add(birth[:10])
+        facts["births"] |= births.get(person, set())
         if sex := _qid(row, "sex"):
             facts["sex"].add(sex)
         if person == item:
