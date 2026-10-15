@@ -43,3 +43,6 @@ talks/**/*.fdb_latexmk
 talks/**/erklaer.md
 site/data/
 
+
+# notebook input, built by the team dataset
+notebooks/features_full.csv
