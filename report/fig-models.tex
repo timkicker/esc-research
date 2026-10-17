@@ -4,7 +4,7 @@
 \begin{axis}[report, name=left, width=0.40\linewidth, height=4.3cm,
     xmin=0, xmax=15, ymin=-0.6, ymax=4.6, ytick={0,...,4},
     yticklabels from table={\models}{label}, y dir=reverse,
-    xlabel={place of the real winner}, title={\small Validation 2021 to 2023}]
+    xlabel={place of the real winner (lower is better)}, title={\small Validation 2021 to 2023}]
   \fill[chosen, opacity=0.12] (axis cs:0,3.6) rectangle (axis cs:15,4.4);
   \addplot[only marks, mark=*, mark size=1.8pt, color=black] table[x=val_2021, y expr=\coordindex-0.27] {\models};
   \addplot[only marks, mark=square*, mark size=1.6pt, color=rest] table[x=val_2022, y expr=\coordindex] {\models};
@@ -13,7 +13,7 @@
 \end{axis}
 \begin{axis}[report, at={(left.east)}, anchor=west, xshift=0.4cm, width=0.40\linewidth, height=4.3cm,
     xmin=0, xmax=15, ymin=-0.6, ymax=4.6, ytick={0,...,4}, yticklabels={}, y dir=reverse,
-    xlabel={place of the real winner}, title={\small Test 2024 to 2026},
+    xlabel={place of the real winner (lower is better)}, title={\small Test 2024 to 2026},
     legend style={font=\scriptsize, draw=none, fill=none, at={(1.02,0.5)}, anchor=west, legend columns=1}]
   \fill[chosen, opacity=0.12] (axis cs:0,3.6) rectangle (axis cs:15,4.4);
   \addplot[only marks, mark=*, mark size=1.8pt, color=black] table[x=test_2024, y expr=\coordindex-0.27] {\models};
