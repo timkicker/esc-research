@@ -1,0 +1,50 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Adamska and Reiss(2025)]{adamska2025}
+Katarzyna Adamska and Joshua Reiss.
+\newblock Predicting {Eurovision} song contest results: A hit song science
+  approach.
+\newblock \emph{Transactions of the International Society for Music Information
+  Retrieval}, 8\penalty0 (1):\penalty0 93--107, 2025.
+\newblock \doi{10.5334/tismir.214}.
+
+\bibitem[{Google}()]{googletrends}
+{Google}.
+\newblock {FAQ} about {Google Trends} data.
+\newblock \url{https://support.google.com/trends/answer/4365533}.
+
+\bibitem[Mayer and Zignago(2011)]{mayer2011}
+Thierry Mayer and Soledad Zignago.
+\newblock Notes on {CEPII}'s distances measures: The {GeoDist} database.
+\newblock Working Paper 2011-25, CEPII, 2011.
+\newblock URL \url{https://www.cepii.fr/pdf_pub/wp/2011/wp2011-25.pdf}.
+
+\bibitem[Pedregosa et~al.(2011)Pedregosa, Varoquaux, Gramfort, Michel, Thirion,
+  Grisel, Blondel, Prettenhofer, Weiss, Dubourg, Vanderplas, Passos,
+  Cournapeau, Brucher, Perrot, and Duchesnay]{pedregosa2011}
+Fabian Pedregosa, Ga{\"e}l Varoquaux, Alexandre Gramfort, Vincent Michel,
+  Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron
+  Weiss, Vincent Dubourg, Jake Vanderplas, Alexandre Passos, David Cournapeau,
+  Matthieu Brucher, Matthieu Perrot, and {\'E}douard Duchesnay.
+\newblock Scikit-learn: Machine learning in {Python}.
+\newblock \emph{Journal of Machine Learning Research}, 12\penalty0
+  (85):\penalty0 2825--2830, 2011.
+
+\bibitem[Spijkervet(2023)]{spijkervet2023}
+Janne Spijkervet.
+\newblock {Spijkervet/eurovision-dataset}: 2023.
+\newblock Zenodo, version 2023, CC BY 4.0, 2023.
+\newblock URL \url{https://doi.org/10.5281/zenodo.10088892}.
+
+\bibitem[Zviazdou(2026)]{zviazdou2026}
+Yauheni Zviazdou.
+\newblock eurovision-dataset.
+\newblock \url{https://github.com/ezvezdov/eurovision-dataset}, 2026.
+\newblock Commits e97cefe and e407c54, GPL-3.0.
+
+\end{thebibliography}

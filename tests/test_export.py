@@ -156,3 +156,24 @@ def test_forecast_table_shows_chance_and_only_the_main_model():
     ]
     assert table.loc[0, "televote_low"] == 8.2
     assert set(table.loc[1:, "jury_rank_error"]) == {6.0}
+
+
+def test_favourites_round_once_from_full_precision():
+    pairs = pd.DataFrame(
+        {
+            "vote_type": ["televote", "televote", "televote", "jury", "jury"],
+            "from_iso3": ["CYP", "AUT", "GRC", "GRC", "AUT"],
+            "to_iso3": ["GRC", "DEU", "CYP", "CYP", "DEU"],
+            "excess": [9.849853, 12.0, 10.52, 8.73, 1.0],
+            "points": [11.7, 12.0, 12.0, 10.3, 1.0],
+            "meetings": [7, 2, 8, 8, 3],
+        }
+    )
+    names = {"CYP": "Cyprus", "GRC": "Greece", "AUT": "Austria", "DEU": "Germany"}
+    table = export.favourites(pairs, names)
+    # two meetings are too few, and 9.849 must not become 9.9 via 9.85
+    public = ["Greece \u2192 Cyprus", "Cyprus \u2192 Greece"]
+    assert list(table["public_label"]) == public
+    assert list(table["public_excess"]) == [10.5, 9.8]
+    jury = ["Greece \u2192 Cyprus", "Austria \u2192 Germany"]
+    assert list(table["jury_label"]) == jury

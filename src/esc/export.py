@@ -203,6 +203,26 @@ def forecast_table(summary: pd.DataFrame, chance: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows).reindex(columns=columns)
 
 
+def favourites(pairs: pd.DataFrame, names: dict, top: int = 5) -> pd.DataFrame:
+    """strongest public and jury pairs side by side for the report table
+
+    rounded once from full precision, the site json already rounds to two
+    places and a second rounding would turn 9.849 into 9.9
+    """
+    reliable = pairs[pairs["meetings"] >= MIN_MEETINGS]
+    sides = {}
+    for vote_type, side in (("televote", "public"), ("jury", "jury")):
+        best = reliable[reliable["vote_type"] == vote_type].nlargest(top, "excess")
+        # a plain arrow, pgfplotstable cannot typeset math inside a string cell
+        sides[f"{side}_label"] = [
+            f"{names[a]} \u2192 {names[b]}"
+            for a, b in zip(best["from_iso3"], best["to_iso3"], strict=True)
+        ]
+        sides[f"{side}_meetings"] = [int(m) for m in best["meetings"]]
+        sides[f"{side}_excess"] = [round(float(e), 1) for e in best["excess"]]
+    return pd.DataFrame(sides)
+
+
 def _write_latex(name: str, frame: pd.DataFrame) -> Path:
     path = EXPORT / "latex" / f"{name}.csv"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -250,6 +270,7 @@ def main() -> list[Path]:
         written.append(Path(shutil.copy2(path, SITE_DATA / path.name)))
     tables = latex_tables(payloads, payloads["meta"]["countries"])
     tables["forecast"] = forecast_table(summary, chance)
+    tables["favourites"] = favourites(pairs, payloads["meta"]["countries"])
     written += [_write_latex(name, frame) for name, frame in tables.items()]
     written += [
         _write_csv("pairs", features),
