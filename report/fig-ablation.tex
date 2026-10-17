@@ -3,14 +3,14 @@
 \pgfplotstablegetelem{0}{base}\of\ablation\pgfmathsetmacro{\ablationbase}{\pgfplotsretval}
 \begin{tikzpicture}
 \begin{axis}[report, xbar, bar width=7pt, bar shift=0pt, width=0.62\linewidth, height=3.6cm,
-    xmin=5, xmax=7.6, ymin=-0.6, ymax=4.6, ytick={0,...,4},
-    yticklabels from table={\ablation}{label},
-    xlabel={places off on average, validation finals 2021 to 2023}, clip=false]
-  \addplot[fill=rest, draw=none] table[x=rank_error, y=y] {\ablation};
+    xmin=0, xmax=11, ymin=-0.6, ymax=4.6, ytick={0,...,4},
+    yticklabels from table={\ablation}{label}, clip=false,
+    xlabel={average place of the winners 2021 to 2023}]
+  \addplot[fill=rest, draw=none] table[x=place, y=y] {\ablation};
   \draw[chosen, thick] (axis cs:\ablationbase,-0.6) -- (axis cs:\ablationbase,4.6);
   \node[font=\scriptsize, chosen, anchor=south west] at (axis cs:\ablationbase,4.6) {all features};
 \end{axis}
 \end{tikzpicture}
-\caption{The forest with all features (blue line) against the same forest without one group of features. A bar ending right of the line means the group helped. This check led to the chosen model, which drops age, sex and lyrics.}
+\caption{The forest with all features (blue line) against the same forest without one group of features, on the validation finals. A bar ending right of the line means the winners fell without that group. Searches matter most, lyrics and the artist's age and sex barely.}
 \label{fig:ablation}
 \end{figure}

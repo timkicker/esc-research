@@ -33,6 +33,7 @@
 \pgfplotstableread[col sep=semicolon]{data/chance.csv}\chance
 \pgfplotstablegetelem{1}{rank_error}\of\chance\pgfmathsetmacro{\chancetest}{\pgfplotsretval}
 \pgfplotstablegetelem{1}{winner_place}\of\chance\pgfmathsetmacro{\middletest}{\pgfplotsretval}
+\pgfplotstablegetelem{0}{winner_place}\of\chance\pgfmathsetmacro{\middleval}{\pgfplotsretval}
 
 \title{\vspace{-1.2cm}\textbf{Predicting the Eurovision final from country pairs and Google searches}}
 \author{Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker\\

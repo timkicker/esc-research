@@ -1,8 +1,8 @@
 \begin{figure}[t]
 \centering
 \begin{tikzpicture}
-\begin{axis}[report, ybar, bar width=10pt, bar shift=0pt, width=\linewidth, height=3.6cm,
-    ymin=0, ymax=20, xmin=-0.6, xmax=9.6, xtick={0,...,9},
+\begin{axis}[report, ybar, bar width=8pt, bar shift=0pt, width=\linewidth, height=3.8cm,
+    ymin=0, ymax=20, xmin=-0.6, xmax=17.6, xtick={0,...,17},
     xticklabels from table={\yearly}{year}, ylabel={place of the winner},
     legend style={font=\scriptsize, draw=none, fill=none, at={(0.5,1.02)}, anchor=south, legend columns=4},
     legend image code/.code={\draw[#1] (0cm,-0.08cm) rectangle (0.3cm,0.1cm);}]
@@ -12,10 +12,10 @@
     y filter/.expression={\thisrow{partcode}==1 ? y : nan}] table[x=x, y=winner] {\yearly};
   \addplot[fill=chosen, draw=none, nodes near coords, nodes near coords style={font=\scriptsize},
     y filter/.expression={\thisrow{partcode}==2 ? y : nan}] table[x=x, y=winner] {\yearly};
-  \addplot[sharp plot, black, dashed, mark=none, fill=none, legend image code/.code={\draw[black, dashed] (0cm,0cm) -- (0.3cm,0cm);}] table[x=x, y=middle] {\yearly};
-  \legend{earlier years, validation years, test years, middle of the field}
+  \addplot[sharp plot, black, dashed, mark=none, fill=none, legend image code/.code={\draw[black, dashed] (0cm,0cm) -- (0.3cm,0cm);}] table[x=x, y=chance] {\yearly};
+  \legend{training years, validation years, test years, middle of the field}
 \end{axis}
 \end{tikzpicture}
-\caption{Every final from 2016 predicted once by the chosen model, trained only on the finals before it. The settings come from the validation years 2021 to 2023 (orange), so only 2024 to 2026 are fully independent.}
+\caption{Every final left out once and predicted by the chosen model trained on all 17 others, later years included. The winner lands in the top three in 9 of 18 finals. The settings come from the validation years (orange), so those look better than fresh data would.}
 \label{fig:yearly}
 \end{figure}
