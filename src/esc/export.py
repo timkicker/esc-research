@@ -257,7 +257,8 @@ def main() -> list[Path]:
     leakcheck = io.read_parquet("leakcheck", "processed")
 
     payloads = {
-        "meta": meta(features, names),
+        # the site shows jury and televote, the combined years before 2016 stay out
+        "meta": meta(features[features["vote_type"].isin(VOTE_CODE)], names),
         "votes": votes(features),
         "entries": entries(features, table),
         "split": split(decomposition),

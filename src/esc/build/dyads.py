@@ -1,8 +1,10 @@
 """the directed dyad panel, (year, round, vote_type, from_iso3, to_iso3)
 
-finals from 2016 only. semi-finals have a different voter set and no jury from
-2023, while before 2016 the split was never reported. the semi-final result
-still enters as a column on the entry rather than its own row
+finals from 2008 only. semi-finals have a different voter set and no jury from
+2023. before 2016 the jury and televote split was never reported, so those
+years carry one combined vote per country (vote_type combined). 2008 is where
+the lyrics and the trends start. the semi-final result still enters as a
+column on the entry rather than its own row
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ from esc.build import left_join, log, log_counts, optional_join, require_non_emp
 STEP = "dyads"
 
 KEYS = ["year", "round", "vote_type", "from_iso3", "to_iso3"]
-FIRST_YEAR = 2016
+FIRST_YEAR = 2008
 
 
 def _grid(votes: pd.DataFrame, entries: pd.DataFrame) -> pd.DataFrame:

@@ -87,28 +87,33 @@ sources:
       constrain to eurovision participants. bands have neither property, that is
       roughly a third of all entries. the query asks for everything with
       participant in (P1344) one edition and the performers (P175) of those
-      songs, one file per year. live data with no release, so no pinned
-      checksum, provenance.yml records what a run got. 2016-2026: 345 of 354
-      entries found, 248 solo with age and sex
+      songs, one file per year, and the birth dates of those people with their
+      precision in a second file, since an unknown date is stored as
+      2000-01-01 at century precision. live data with no release, so no pinned
+      checksum, provenance.yml records what a run got. 1956-2026: 1597 of 1748
+      entries found, 1101 solo, most of the misses before 1980
 
   - id: team_dataset
     name: teammate repo, lyrics analysis and google trends
     url:
-      lyrics_analysis.json: https://raw.githubusercontent.com/ezvezdov/eurovision-dataset/e97cefe7346ca8852ecf305937496a6c46053bfe/processed/lyrics_analysis.json
-      trends_results.csv: https://raw.githubusercontent.com/ezvezdov/eurovision-dataset/e97cefe7346ca8852ecf305937496a6c46053bfe/trends_results.csv
+      lyrics_analysis.json: https://raw.githubusercontent.com/ezvezdov/eurovision-dataset/e407c54605f1f8c4b74b332a4e0358a36ccad2b5/processed/lyrics_analysis.json
+      trends_results.csv: https://raw.githubusercontent.com/ezvezdov/eurovision-dataset/e407c54605f1f8c4b74b332a4e0358a36ccad2b5/trends_results.csv
     kind: download
     license: GPL-3.0, we read one data file and take no code
     citation: Zviazdou, Y. (2026). eurovision-dataset. https://github.com/ezvezdov/eurovision-dataset
-    retrieved_at: '2026-10-04T18:43:52Z'
+    retrieved_at: '2026-10-15T00:39:34Z'
     sha256:
       lyrics_analysis.json: d40ed35f0828aab5f2f9b5e7810e783f2caefbdc6802f15483b2eb122ff5645e
-      trends_results.csv: ee1b317e54728301c2fb13bf9ad11943560e81df7ffe6baf8df79d34aeaa5580
+      trends_results.csv: 895d3319173c3225c7dfa23a4f0a138623a4dd12a6fcc99d8949077c22b6140d
     notes: >-
       lyrics: 437 finalists 2008-2026, llm labels for sentiment, theme, two
-      repetition flags and the main language. trends: 2016-2026, one query per
-      entry so the values are a per country profile with the top country at 100,
-      web search on artist and song, youtube on the title alone. rebuilt in our
-      pull request, the old file was 96.7% zeros. pinned to the merge commit
+      repetition flags and the main language. trends: 2008-2026 without 2010
+      (the repo has no 2010 song list), one query per entry so the values are a
+      per country profile with the top country at 100, web search and youtube
+      both on artist and song. youtube used the title alone until commit
+      e407c54, which changed 30% of the 2016-2026 youtube values, web is
+      unchanged. 2008 and 2009 are almost all zeros (1-3% non-zero). andorra,
+      bosnia, slovakia and turkey added as voting countries. pinned to e407c54
 
   - id: manual_country_map
     name: country name and code bridge

@@ -7,7 +7,8 @@ from esc import io
 from esc.build import dyads, entries, features, votes
 
 LADDER_SUM = 58
-PANEL_YEAR = 2016
+# the fixtures hold 2015 (combined) and 2016 (jury and televote)
+PANEL_YEARS = {2015, 2016}
 
 
 @pytest.fixture()
@@ -49,12 +50,17 @@ def test_every_voter_awards_the_full_ladder(built):
     assert set(totals.unique()) == {LADDER_SUM}
 
 
-def test_the_panel_starts_in_2016(built):
+def test_the_panel_holds_finals_from_2008(built):
     table = io.read_parquet("dyads", "processed")
-    # 2015 is in the fixtures and reports combined points only, so it is out
-    assert set(table["year"]) == {PANEL_YEAR}
-    assert set(table["vote_type"]) == {"jury", "televote"}
+    assert set(table["year"]) == PANEL_YEARS
     assert set(table["round"]) == {"final"}
+
+
+def test_the_split_vote_starts_in_2016(built):
+    table = io.read_parquet("dyads", "processed")
+    by_year = table.groupby("year")["vote_type"].unique()
+    assert set(by_year[2015]) == {"combined"}
+    assert set(by_year[2016]) == {"jury", "televote"}
 
 
 def test_country_map_covers_every_country_in_the_panel(built):

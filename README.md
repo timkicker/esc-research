@@ -56,7 +56,7 @@ The finished tables are parquet files in `data/processed/` and `features.parquet
 
 ## What is in the table
 
-There is one row for every country that gives points to another country in a final, separately for jury and televote. That is 19800 rows over ten contests. Older contests are parsed too, but we only use them for the history between two countries since the jury and televote points were not published separately before 2016.
+There is one row for every country that gives points to another country in a final, from 2008 on. From 2016 jury and televote are separate rows (19774 rows over ten contests). Before 2016 the two were never published separately, so 2008-2015 has one combined row per pair (8144 rows, `vote_type` is `combined`). The jury and televote models only use 2016 on. Contests before 2008 are parsed too, but only for the history between two countries.
 
 `uv run esc model` writes three more tables to `data/processed/`. `model_summary` has the forecast scores for every model and every set of inputs. `decomposition` splits the points into the part the entry explains by itself, the part the relationship between the two countries explains and the rest, separately for jury and televote. `pair_affinity` says for every pair of countries how many points one gave the other on average beyond what the entry earned. On disk it is sorted by country, so sort it by `excess` if you want a ranking.
 
@@ -84,7 +84,7 @@ Only `data/manual/` is in git. `sources.yml` is in git too but a run never chang
 - eurovisionworld.com for 2024 to 2026, where the dataset stops. The results page loads all its points from a small script file with json in it, so we download that file directly and keep it on disk. robots.txt allows it.
 - Mayer & Zignago (2011). Notes on CEPII's distances measures: The GeoDist database. CEPII WP 2011-25. Etalab 2.0. Distance, shared border and shared language for every pair.
 - [ezvezdov/eurovision-dataset](https://github.com/ezvezdov/eurovision-dataset) is the repo of our teammate (GPL-3.0). From there we take what an llm read out of the lyrics, the song language and Google Trends for every entry in every voting country. We only read its data files at a fixed commit and use none of its code.
-- Wikidata (CC0 1.0) for the age and sex of the artists from 2016 on. They end up in `entries.parquet` but no model uses them. Bands and duos stay empty.
+- Wikidata (CC0 1.0) for the age and sex of the artists since 1956. They end up in `entries.parquet` but no model uses them. Bands and duos stay empty, and so does the age when Wikidata knows the birth date only to the year.
 - The tables in `data/manual/` are ours, CC0 1.0.
 
 Some things we left out on purpose. YouTube views can't be used because the API only gives today's count and not the one from before the final. Published work gets only 1 to 8 percent of the variance out of audio features and Spotify closed its audio API in 2024 anyway. The terms of Spotify and TMDB don't allow machine learning at all. `sources.yml` lists all of them under `excluded:` with the reason.
