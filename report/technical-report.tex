@@ -1,0 +1,61 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}
+\usepackage{booktabs,tabularx,array}
+\usepackage{amsmath}
+\usepackage{pgfplots,pgfplotstable}
+\pgfplotsset{compat=1.18}
+\usepackage[authoryear,round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\titleformat{\section}{\normalsize\bfseries}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.0em}{0.35em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{1.5em}
+\setlength{\parskip}{0.4em}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.85}\setcounter{topnumber}{3}\setcounter{bottomnumber}{2}\setcounter{totalnumber}{4}
+
+% colours of the figures: the model chosen on the validation finals, the rest, the validation years
+\definecolor{chosen}{HTML}{2F5D8A}
+\definecolor{rest}{HTML}{9AA5B1}
+\definecolor{valyears}{HTML}{D9822B}
+\pgfplotsset{
+  discard if/.style 2 args={x filter/.append code={\edef\tempa{\thisrow{#1}}\edef\tempb{#2}\ifx\tempa\tempb\def\pgfmathresult{inf}\fi}},
+  discard if not/.style 2 args={x filter/.append code={\edef\tempa{\thisrow{#1}}\edef\tempb{#2}\ifx\tempa\tempb\else\def\pgfmathresult{inf}\fi}},
+  report/.style={tick label style={font=\scriptsize}, label style={font=\scriptsize}, axis line style={rest}, tick style={rest}, unbounded coords=discard},
+}
+\pgfplotstableread[col sep=semicolon]{data/models.csv}\models
+\pgfplotstableread[col sep=semicolon]{data/yearly.csv}\yearly
+\pgfplotstableread[col sep=semicolon]{data/ablation.csv}\ablation
+\pgfplotstableread[col sep=semicolon]{data/chance.csv}\chance
+\pgfplotstablegetelem{1}{rank_error}\of\chance\pgfmathsetmacro{\chancetest}{\pgfplotsretval}
+\pgfplotstablegetelem{1}{winner_place}\of\chance\pgfmathsetmacro{\middletest}{\pgfplotsretval}
+
+\title{\vspace{-1.2cm}\textbf{Predicting the Eurovision final from country pairs and Google searches}}
+\author{Anna-Ilona Nikolaeva, Yauheni Zviazdou and Tim Kicker\\
+\small Technical report, Introduction to Data Science, University of Helsinki, October 2026}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.4em}
+
+\begin{abstract}\small
+\noindent
+\input{abstract}
+\end{abstract}
+
+\input{body}
+
+{\footnotesize
+\setlength{\bibsep}{1pt}
+\bibliographystyle{plainnat}
+\bibliography{refs}
+}
+
+\input{ai-note}
+
+\end{document}

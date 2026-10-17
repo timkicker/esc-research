@@ -1,0 +1,27 @@
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}
+\begin{axis}[report, name=left, xbar, bar width=7pt, bar shift=0pt, width=0.47\linewidth, height=4.2cm,
+    xmin=0, xmax=10, ymin=-0.6, ymax=4.6, ytick={0,...,4},
+    yticklabels from table={\models}{label}, y dir=reverse,
+    xlabel={places off on average (lower is better)}, title={\small Whole scoreboard}]
+  \addplot[fill=rest, draw=none, y filter/.expression={\thisrow{chosen}==1 ? nan : y}] table[x=test_rank_error, y expr=\coordindex] {\models};
+  \addplot[fill=chosen, draw=none, y filter/.expression={\thisrow{chosen}==1 ? y : nan}] table[x=test_rank_error, y expr=\coordindex] {\models};
+  \draw[dashed, black] (axis cs:\chancetest,-0.6) -- (axis cs:\chancetest,4.6);
+  \node[font=\scriptsize, anchor=north west] at (axis cs:\chancetest,-0.55) {random};
+\end{axis}
+\begin{axis}[report, at={(left.east)}, anchor=west, xshift=0.5cm, width=0.36\linewidth, height=4.2cm,
+    xmin=0, xmax=15, ymin=-0.6, ymax=4.6, ytick={0,...,4}, yticklabels={}, y dir=reverse,
+    xlabel={predicted place of the real winner}, title={\small Winner},
+    legend style={font=\scriptsize, draw=none, fill=none, at={(1.02,0.5)}, anchor=west, legend columns=1}]
+  \addplot[only marks, mark=*, mark size=1.8pt, color=black] table[x=winner_2024, y expr=\coordindex-0.2] {\models};
+  \addplot[only marks, mark=square*, mark size=1.6pt, color=rest] table[x=winner_2025, y expr=\coordindex] {\models};
+  \addplot[only marks, mark=triangle*, mark size=2.2pt, draw=black, fill=white] table[x=winner_2026, y expr=\coordindex+0.2] {\models};
+  \legend{2024, 2025, 2026}
+  \draw[dashed, black] (axis cs:\middletest,-0.6) -- (axis cs:\middletest,4.6);
+  \node[font=\scriptsize, anchor=north east] at (axis cs:\middletest,-0.55) {middle};
+\end{axis}
+\end{tikzpicture}
+\caption{Test finals 2024 to 2026 for five of the seven models. The blue model was chosen on the validation finals. On the whole scoreboard all models are close and the simple linear ones do best, while the chosen model puts the real winner highest. Dashed: a random order (left, mean of 1000 draws) and the middle of the field (right).}
+\label{fig:models}
+\end{figure}
