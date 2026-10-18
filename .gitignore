@@ -48,6 +48,5 @@ report/*.fls
 report/*.fdb_latexmk
 site/data/
 
-
 # notebook input, built by the team dataset
 notebooks/features_full.csv
